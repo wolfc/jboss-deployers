@@ -25,7 +25,7 @@ import java.util.Stack;
 
 /**
  * DeployerTracking.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.1 $
  */
@@ -41,24 +41,40 @@ public class DeployerTracking
    };
 
    /**
+    * Get the stack.
+    *
+    * @return the stack
+    */
+   private static Stack<String> getStack()
+   {
+      return currentDeployer.get();
+   }
+
+   /**
     * Get the current deployer
-    * 
+    *
     * @return the name of the current deployer
     */
    public static String getCurrentDeployer()
    {
-      if (currentDeployer.get().isEmpty())
-         return "UNKNOWN";
-      return currentDeployer.get().peek();
+      return (getStack().isEmpty()) ? "UNKNOWN" : getStack().peek();
    }
 
+   /**
+    * Push onto stack.
+    *
+    * @param deployer the current deployer
+    */
    public static void push(String deployer)
    {
-      currentDeployer.get().push(deployer);
+      getStack().push(deployer);
    }
-   
+
+   /**
+    * Pop from the stack.
+    */
    public static void pop()
    {
-      currentDeployer.get().pop();
+      getStack().pop();
    }
 }
