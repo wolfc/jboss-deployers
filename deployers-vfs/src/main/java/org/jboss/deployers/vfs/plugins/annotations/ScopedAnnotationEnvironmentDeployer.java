@@ -23,6 +23,7 @@ package org.jboss.deployers.vfs.plugins.annotations;
 
 import javassist.ClassPool;
 import javassist.scopedpool.ScopedClassPoolRepository;
+import org.jboss.deployers.vfs.spi.structure.VFSDeploymentUnit;
 
 /**
  * Scoped class pool usage annotation environment deployer.
@@ -52,11 +53,20 @@ public class ScopedAnnotationEnvironmentDeployer extends AnnotationEnvironmentDe
       this.repository = repository;
    }
 
+   @Deprecated
    protected ClassPool createClassPool(ClassLoader classLoader)
    {
       if (repository != null)
          return repository.findClassPool(classLoader);
 
       return super.createClassPool(classLoader);
+   }
+
+   protected ClassPool createClassPool(VFSDeploymentUnit unit)
+   {
+      if (repository != null)
+         return repository.findClassPool(unit.getClassLoader());
+
+      return super.createClassPool(unit);
    }
 }
