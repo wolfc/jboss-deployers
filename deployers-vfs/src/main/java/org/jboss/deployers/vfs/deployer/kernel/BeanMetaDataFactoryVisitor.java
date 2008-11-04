@@ -29,6 +29,7 @@ import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.deployer.helpers.DeploymentVisitor;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.spi.scope.CommonLevels;
 
 /**
  * BeanMetaDataVisitor.<p>
@@ -50,6 +51,28 @@ public abstract class BeanMetaDataFactoryVisitor<T> implements DeploymentVisitor
    {
       DeploymentUnit component = unit.addComponent(bean.getName());
       component.addAttachment(BeanMetaData.class.getName(), bean);
+      String className = bean.getBean();
+      if (className != null)
+      {
+         Object qualifier;
+         if (bean.getClassLoader() == null)
+         {
+            ClassLoader cl = unit.getClassLoader();
+            try
+            {
+               qualifier = cl.loadClass(className);
+            }
+            catch (Exception e)
+            {
+               throw new IllegalArgumentException("Exception loading class for ScopeKey addition.", e);
+            }
+         }
+         else
+         {
+            qualifier = className;
+         }
+         component.getScope().addScope(CommonLevels.CLASS, qualifier);
+      }
    }
 
    /**
