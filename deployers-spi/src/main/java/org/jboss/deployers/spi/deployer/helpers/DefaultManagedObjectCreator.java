@@ -39,7 +39,7 @@ import org.jboss.metadata.spi.MetaData;
  * to build the attachment ManagedObject.
  * 
  * @author Scott.Stark@jboss.org
- * @version $Revision:$
+ * @version $Revision$
  */
 public class DefaultManagedObjectCreator
    implements ManagedObjectCreator
@@ -71,7 +71,6 @@ public class DefaultManagedObjectCreator
       throws DeploymentException
    {
       MetaData metaData = unit.getMetaData();
-
       ManagedObjectFactory factory = mof;
       if(factory == null )
          factory = ManagedObjectFactoryBuilder.create();
@@ -81,7 +80,7 @@ public class DefaultManagedObjectCreator
          Object instance = unit.getAttachment(name);
          if (instance != null)
          {
-            ManagedObject mo = factory.initManagedObject(instance, metaData);
+            ManagedObject mo = factory.initManagedObject(instance, null, metaData, name, null);
             if (mo != null)
                managedObjects.put(mo.getName(), mo);
          }
