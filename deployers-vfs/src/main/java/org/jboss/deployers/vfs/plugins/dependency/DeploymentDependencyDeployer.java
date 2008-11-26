@@ -22,6 +22,7 @@
 package org.jboss.deployers.vfs.plugins.dependency;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
