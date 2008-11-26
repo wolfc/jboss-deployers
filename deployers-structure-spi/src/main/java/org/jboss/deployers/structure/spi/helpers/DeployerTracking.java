@@ -25,7 +25,7 @@ import java.util.Stack;
 
 /**
  * DeployerTracking.
- *
+ * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.1 $
  */
@@ -52,7 +52,7 @@ public class DeployerTracking
 
    /**
     * Get the current deployer
-    *
+    * 
     * @return the name of the current deployer
     */
    public static String getCurrentDeployer()

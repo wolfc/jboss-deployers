@@ -7,7 +7,7 @@
       <incallback method="addInstanceClassFactory"/>
       <uncallback method="removeInstanceClassFactory"/>
    </bean>
-   
+
    <!-- The MainDeployer -->
    <bean name="MainDeployer" class="org.jboss.deployers.plugins.main.MainDeployerImpl">
       <property name="structuralDeployers"><inject bean="StructuralDeployers"/></property>

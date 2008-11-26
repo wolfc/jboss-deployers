@@ -21,6 +21,8 @@
 */
 package org.jboss.test.deployers.vfs.annotations.support.jar;
 
+import org.jboss.test.deployers.vfs.annotations.support.jar.JarMarkOnClassSuperAnnotated;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.com">Ales Justin</a>
  */

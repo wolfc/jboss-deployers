@@ -30,9 +30,9 @@ import org.jboss.dependency.spi.Controller;
  */
 public class SimpleAliasTester extends SimpleAnnotated
 {
-   public static SimpleAnnotatedAlias factory()
+   public static SimpleAliasTester factory()
    {
-      return new SimpleAnnotatedAlias();
+      return new SimpleAliasTester();
    }
 
    public void setController(Controller controller)

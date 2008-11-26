@@ -41,10 +41,10 @@ import org.jboss.metadata.spi.scope.ScopeKey;
 
 /**
  * BeanMetaDataDeployer.<p>
- *
+ * 
  * This deployer is responsible for deploying all metadata of
  * type {@link org.jboss.beans.metadata.spi.BeanMetaData}.
- *
+ * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.1 $
  */
@@ -52,10 +52,10 @@ public class BeanMetaDataDeployer extends AbstractSimpleRealDeployer<BeanMetaDat
 {
    /** The controller */
    private Controller controller;
-
+   
    /**
     * Create a new BeanDeployer.
-    *
+    * 
     * @param kernel the kernel
     * @throws IllegalArgumentException for a null kernel
     * @deprecated use other constructor
@@ -151,13 +151,13 @@ public class BeanMetaDataDeployer extends AbstractSimpleRealDeployer<BeanMetaDat
    public void undeploy(DeploymentUnit unit, BeanMetaData deployment)
    {
       controller.uninstall(deployment.getName());
-
+      
       // Remove any classloader metadata we added (not necessary if we clone above)
       ClassLoaderMetaData classLoader = deployment.getClassLoader();
       if (classLoader instanceof DeploymentClassLoaderMetaData)
          deployment.setClassLoader(null);
    }
-
+   
    /**
     * DeploymentClassLoaderMetaData.
     */
@@ -165,13 +165,13 @@ public class BeanMetaDataDeployer extends AbstractSimpleRealDeployer<BeanMetaDat
    {
       /** The serialVersionUID */
       private static final long serialVersionUID = 1L;
-
+      
       /** The deployment unit */
       private DeploymentUnit unit;
 
       /**
        * Create a new DeploymentClassLoaderMetaData.
-       *
+       * 
        * @param unit the deployment unit
        */
       public DeploymentClassLoaderMetaData(DeploymentUnit unit)
@@ -180,7 +180,7 @@ public class BeanMetaDataDeployer extends AbstractSimpleRealDeployer<BeanMetaDat
             throw new IllegalArgumentException("Null unit");
          this.unit = unit;
       }
-
+      
       @Override
       public ValueMetaData getClassLoader()
       {
