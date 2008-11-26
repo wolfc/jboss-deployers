@@ -23,6 +23,7 @@ package org.jboss.deployers.vfs.plugins.dependency;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.dependency.spi.DependencyItem;
 import org.jboss.deployers.spi.deployer.DeploymentStages;
