@@ -52,7 +52,7 @@ public class DeploymentAliasesDeployer extends AbstractRealDeployerWithInput<Dep
    private class DeploymentAliasDeploymentVisitor extends AbstractDeploymentVisitor<Object, DeploymentAliases>
    {
       @Override
-      protected DeploymentUnit addComponent(DeploymentUnit unit, Object attachment)
+      protected void addComponent(DeploymentUnit unit, Object attachment)
       {
          ControllerContext context = unit.getAttachment(ControllerContext.class);
          if (context == null)
@@ -62,7 +62,6 @@ public class DeploymentAliasesDeployer extends AbstractRealDeployerWithInput<Dep
          try
          {
             controller.addAlias(attachment, contextName);
-            return null;
          }
          catch (Throwable t)
          {
@@ -78,7 +77,11 @@ public class DeploymentAliasesDeployer extends AbstractRealDeployerWithInput<Dep
 
       protected List<Object> getComponents(DeploymentAliases deployment)
       {
-         return new ArrayList<Object>(deployment.getAliases());
+         Set<Object> aliases = deployment.getAliases();
+         if (aliases != null && aliases.isEmpty() == false)
+            return new ArrayList<Object>(aliases);
+         else
+            return Collections.emptyList();
       }
 
       protected Class<Object> getComponentType()

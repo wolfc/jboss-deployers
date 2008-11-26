@@ -32,7 +32,7 @@ import org.jboss.deployers.structure.spi.DeploymentUnit;
 
 /**
  * DeploymentDependencyDeployer.
- * 
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class DeploymentDependencyDeployer extends AbstractRealDeployerWithInput<DeploymentDependencies>
@@ -46,10 +46,9 @@ public class DeploymentDependencyDeployer extends AbstractRealDeployerWithInput<
    private class DependencyItemComponentVisitor extends AbstractDeploymentVisitor<DependencyItem, DeploymentDependencies>
    {
       @Override
-      protected DeploymentUnit addComponent(DeploymentUnit unit, DependencyItem attachment)
+      protected void addComponent(DeploymentUnit unit, DependencyItem attachment)
       {
          unit.addIDependOn(attachment);
-         return null;
       }
 
       @Override
@@ -60,7 +59,11 @@ public class DeploymentDependencyDeployer extends AbstractRealDeployerWithInput<
 
       protected List<? extends DependencyItem> getComponents(DeploymentDependencies deployment)
       {
-         return new ArrayList<DependencyItem>(deployment.getDependencies());
+         Set<DependencyItem> items = deployment.getDependencies();
+         if (items != null && items.isEmpty() == false)
+            return new ArrayList<DependencyItem>(items);
+         else
+            return Collections.emptyList();
       }
 
       protected Class<DependencyItem> getComponentType()
