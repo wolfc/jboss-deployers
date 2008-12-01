@@ -29,6 +29,7 @@ import org.jboss.dependency.spi.ControllerContext;
 import org.jboss.deployers.client.spi.DeployerClient;
 import org.jboss.deployers.client.spi.Deployment;
 import org.jboss.deployers.plugins.main.MainDeployerImpl;
+import org.jboss.deployers.spi.structure.ContextInfo;
 import org.jboss.deployers.structure.spi.DeploymentContext;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.deployers.structure.spi.helpers.AbstractDeploymentContext;
@@ -71,12 +72,12 @@ public class ModuleRemoveUnitTestCase extends ClassLoaderDependenciesTest
       mainDeployer.deploy(ad);
       try
       {
-         assertAlias(true);
+         assertAlias(true, "A");
       }
       finally
       {
          mainDeployer.undeploy(ad);
-         assertAlias(false);
+         assertAlias(false, "A");
       }
    }
 
@@ -104,11 +105,11 @@ public class ModuleRemoveUnitTestCase extends ClassLoaderDependenciesTest
       }
    }
 
-   protected void assertAlias(boolean exists) throws Exception
+   protected void assertAlias(boolean exists, String name) throws Exception
    {
       // this is ugly impl detail
       String controllerId = controller.getClass().getSimpleName() + "[" + System.identityHashCode(controller) + "]";
-      ControllerContext alias = controller.getContext("A_Alias_" + controllerId, null);
+      ControllerContext alias = controller.getContext(name + "_Alias_" + controllerId, null);
       assertEquals(exists, alias != null);
    }
 
