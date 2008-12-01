@@ -80,6 +80,30 @@ public class ModuleRemoveUnitTestCase extends ClassLoaderDependenciesTest
       }
    }
 
+   public void testAliasRemoveOnChild() throws Exception
+   {
+      DeployerClient mainDeployer = getMainDeployer();
+
+      Version v1 = Version.parseVersion("1");
+      Deployment ad = createSimpleDeployment("A");
+      addClassLoadingMetaData(ad, ad.getName(), v1, true, A.class);
+
+      Version v2 = Version.parseVersion("2");
+      ContextInfo childContextInfo = addChild(ad, "B");
+      addClassLoadingMetaData(childContextInfo, "B", v2, true, A.class);
+
+      mainDeployer.deploy(ad);
+      try
+      {
+         assertAlias(true, "A/B");
+      }
+      finally
+      {
+         mainDeployer.undeploy(ad);
+         assertAlias(false, "A/B");
+      }
+   }
+
    protected void assertAlias(boolean exists) throws Exception
    {
       // this is ugly impl detail

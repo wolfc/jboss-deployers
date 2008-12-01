@@ -33,7 +33,7 @@ import org.jboss.deployers.structure.spi.DeploymentUnit;
 
 /**
  * AbstractDeploymentClassLoaderPolicyModule.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="ales.justin@jboss.com">Ales Justin</a>
  * @version $Revision: 1.1 $
@@ -45,13 +45,13 @@ public abstract class AbstractDeploymentClassLoaderPolicyModule extends ClassLoa
 
    /** The classloader state for deployments */
    private static ControllerState CLASSLOADER_STATE = new ControllerState(DeploymentStages.CLASSLOADER.getName());
-   
+
    /** The deployment unit */
    private DeploymentUnit unit;
-   
+
    /**
-    * Determine the classloading metadata for the deployment unit 
-    * 
+    * Determine the classloading metadata for the deployment unit
+    *
     * @param unit the deployment unit
     * @return the classloading metadata
     */
@@ -63,8 +63,8 @@ public abstract class AbstractDeploymentClassLoaderPolicyModule extends ClassLoa
    }
 
    /**
-    * Determine the classloading metadata for the deployment unit 
-    * 
+    * Determine the classloading metadata for the deployment unit
+    *
     * @param unit the deployment unit
     * @param addAlias should we add alias or remove
     * @return the classloading metadata
@@ -77,7 +77,7 @@ public abstract class AbstractDeploymentClassLoaderPolicyModule extends ClassLoa
       ControllerContext context = unit.getTopLevel().getAttachment(ControllerContext.class);
       if (context == null)
          throw new IllegalStateException("Deployment has no controller context");
-      
+
       // We use the deployment name
       String contextName = unit.getName();
 
@@ -105,13 +105,13 @@ public abstract class AbstractDeploymentClassLoaderPolicyModule extends ClassLoa
             }
          }
       }
-      
+
       return contextName;
    }
-   
+
    /**
     * Create a new AbstractDeploymentClassLoaderPolicyModule.
-    * 
+    *
     * @param unit the deployment unit
     * @throws IllegalArgumentException for a null unit
     */
@@ -125,7 +125,7 @@ public abstract class AbstractDeploymentClassLoaderPolicyModule extends ClassLoa
 
    /**
     * Get the unit.
-    * 
+    *
     * @return the unit.
     */
    public DeploymentUnit getDeploymentUnit()
@@ -140,9 +140,15 @@ public abstract class AbstractDeploymentClassLoaderPolicyModule extends ClassLoa
    }
 
    @Override
-   public void reset()
+   public void release()
    {
-      super.reset();
-      determineContextName(unit, false);
+      try
+      {
+         super.release();
+      }
+      finally
+      {
+         determineContextName(unit, false);
+      }
    }
 }
