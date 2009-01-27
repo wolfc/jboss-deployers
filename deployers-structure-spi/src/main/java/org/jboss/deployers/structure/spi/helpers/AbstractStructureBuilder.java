@@ -34,19 +34,24 @@ import org.jboss.deployers.spi.structure.StructureMetaData;
 import org.jboss.deployers.spi.structure.StructureMetaDataFactory;
 import org.jboss.deployers.structure.spi.DeploymentContext;
 import org.jboss.deployers.structure.spi.StructureBuilder;
+import org.jboss.deployers.structure.spi.StructureProcessor;
 import org.jboss.logging.Logger;
 
 /**
  * AbstractStructureBuilder.
  * 
  * @author <a href="adrian@jboss.org">Adrian Brock</a>
+ * @author <a href="ales.justin@jboss.org">Ales Justin</a>
  * @version $Revision: 1.1 $
  */
 public class AbstractStructureBuilder implements StructureBuilder
 {
    /** The log */
    private final Logger log = Logger.getLogger(getClass());
-   
+
+   /** The structure processor */
+   private StructureProcessor structureProcessor;
+
    public DeploymentContext populateContext(Deployment deployment, StructureMetaData metaData) throws DeploymentException
    {
       if (deployment == null)
@@ -61,6 +66,8 @@ public class AbstractStructureBuilder implements StructureBuilder
       DeploymentContext result;
       try
       {
+         prepareStructureMetaData(deployment, metaData);
+
          result = createRootDeploymentContext(deployment, metaData);
          if (result == null)
             throw new IllegalStateException("Root deployment context is null");
@@ -69,6 +76,8 @@ public class AbstractStructureBuilder implements StructureBuilder
          ContextInfo contextInfo = metaData.getContext("");
          if (contextInfo == null)
             contextInfo = StructureMetaDataFactory.createContextInfo("", null);
+
+         applyStructureMetaData(result, metaData);
          contextInfo.setPredeterminedManagedObjects(deployment.getPredeterminedManagedObjects());
          applyContextInfo(result, contextInfo);
       }
@@ -120,6 +129,8 @@ public class AbstractStructureBuilder implements StructureBuilder
             // Only process the child contexts
             if ("".equals(child.getPath()) == false)
             {
+               prepareContextInfo(context, child);
+
                DeploymentContext childContext = createChildDeploymentContext(context, child);
                if (childContext == null)
                   throw new IllegalStateException("Child deployment context is null");
@@ -146,6 +157,42 @@ public class AbstractStructureBuilder implements StructureBuilder
    }
 
    /**
+    * Prepare the structure metadata.
+    *
+    * @param deploymentContext the deployment
+    * @param structureMetaData the structure metadata
+    */
+   protected void prepareStructureMetaData(Deployment deploymentContext, StructureMetaData structureMetaData)
+   {
+      if (structureProcessor != null)
+         structureProcessor.prepareStructureMetaData(deploymentContext, structureMetaData);
+   }
+
+   /**
+    * Prepare the structure metadata.
+    *
+    * @param parentDeploymentContext the parent deployment context
+    * @param contextInfo the context info
+    */
+   protected void prepareContextInfo(DeploymentContext parentDeploymentContext, ContextInfo contextInfo)
+   {
+      if (structureProcessor != null)
+         structureProcessor.prepareContextInfo(parentDeploymentContext, contextInfo);
+   }
+
+   /**
+    * Apply the structure metadata.
+    *
+    * @param deploymentContext the parent deployment context
+    * @param structureMetaData the structure metadata
+    */
+   protected void applyStructureMetaData(DeploymentContext deploymentContext, StructureMetaData structureMetaData)
+   {
+      if (structureProcessor != null)
+         structureProcessor.applyStructureMetaData(deploymentContext, structureMetaData);
+   }
+
+   /**
     * Apply the context info. This transfers the PredeterminedManagedObjects
     * and TransientManagedObjects and other information from the ContextInfo to the DeploymentContext.
     * 
@@ -161,6 +208,9 @@ public class AbstractStructureBuilder implements StructureBuilder
 
       context.setRelativeOrder(contextInfo.getRelativeOrder());
       applyComparator(context, contextInfo);
+
+      if (structureProcessor != null)
+         structureProcessor.applyContextInfo(context, contextInfo);
    }
 
    /**
@@ -237,5 +287,25 @@ public class AbstractStructureBuilder implements StructureBuilder
       String path = child.getPath();
       String name = parent.getName() + "/" + path;
       return new AbstractDeploymentContext(name, path); 
+   }
+
+   /**
+    * Set structure processor.
+    *
+    * @param structureProcessor the context info processor
+    */
+   public void setStructureProcessor(StructureProcessor structureProcessor)
+   {
+      this.structureProcessor = structureProcessor;
+   }
+
+   /**
+    * Get the context info processor.
+    *
+    * @return the structure processor
+    */
+   protected StructureProcessor getStructureProcessor()
+   {
+      return structureProcessor;
    }
 }

@@ -76,7 +76,7 @@ public class ModuleRemoveUnitTestCase extends ClassLoaderDependenciesTest
       }
       finally
       {
-         mainDeployer.undeploy(ad);
+         mainDeployer.undeploy(ad);        
          assertAlias(false, "A");
       }
    }

@@ -526,6 +526,8 @@ public abstract class AbstractStructureDeployer implements StructureDeployer
    protected void applyContextInfo(StructureContext context, ContextInfo result)
    {
       if (result != null && contextInfoOrder != null)
+      {
          result.setRelativeOrder(contextInfoOrder);
+      }
    }
 }
