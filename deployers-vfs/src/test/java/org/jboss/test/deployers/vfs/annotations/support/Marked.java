@@ -21,13 +21,17 @@
 */
 package org.jboss.test.deployers.vfs.annotations.support;
 
-import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.com">Ales Justin</a>
  */
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@MarkedAnnotation
 public @interface Marked
 {
 }

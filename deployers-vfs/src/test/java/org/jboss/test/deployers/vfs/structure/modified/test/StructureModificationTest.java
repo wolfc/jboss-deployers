@@ -42,7 +42,7 @@ public abstract class StructureModificationTest extends AbstractWebBeansTest
 
    protected StructureModificationChecker createStructureModificationChecker()
    {
-      MainDeployerStructure mainDeployer = assertBean("MainDeployer", MainDeployerStructure.class);
+      MainDeployerStructure mainDeployer = getMainDeployerStructure();
       VirtualFileFilter filter = createFilter();
       return createStructureModificationChecker(mainDeployer, filter);
    }

@@ -26,8 +26,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.xb.annotations.JBossXmlConstants;
 import org.jboss.virtual.VirtualFile;
+import org.jboss.virtual.VFSInputSource;
+import org.jboss.xb.annotations.JBossXmlConstants;
+import org.jboss.xb.util.JBossXBHelper;
+import org.xml.sax.InputSource;
 
 /**
  * MultipleSchemaResolverDeployer.
@@ -82,14 +85,14 @@ public abstract class MultipleSchemaResolverDeployer<T> extends MultipleJBossXBD
    {
       if (excluded.contains(metadata) == false)
       {
-         String namespace = JBossXBDeployerHelper.findNamespace(metadata);
+         String namespace = JBossXBHelper.findNamespace(metadata);
          if (namespace == null || JBossXmlConstants.DEFAULT.equals(namespace))
             throw new IllegalArgumentException(
                   "Registering schema with JBossXB is enabled, but cannot find namespace on class or package: " + metadata +
                   ", perhaps missing @JBossXmlSchema or using default namespace attribute."
             );
 
-         JBossXBDeployerHelper.addClassBinding(namespace, metadata);
+         JBossXBHelper.addClassBinding(namespace, metadata);
          namespaces.add(namespace);
       }
    }
@@ -100,12 +103,13 @@ public abstract class MultipleSchemaResolverDeployer<T> extends MultipleJBossXBD
    public void destroy()
    {
       for (String namespace : namespaces)
-         JBossXBDeployerHelper.removeClassBinding(namespace);
+         JBossXBHelper.removeClassBinding(namespace);
       namespaces.clear();
    }
 
    protected <U> U parse(Class<U> expectedType, VirtualFile file, Object root) throws Exception
    {
-      return getHelper().parse(expectedType, file);
+      InputSource source = new VFSInputSource(file);
+      return getHelper().parse(expectedType, source);
    }
 }

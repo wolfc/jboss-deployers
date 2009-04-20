@@ -60,7 +60,7 @@ import org.jboss.test.deployers.managed.support.MockProfileService;
 
 /**
  * ManagedDeployment unit tests.
- * 
+ *
  * @author Scott.Stark@jboss.org
  * @author Ales.Justin@jboss.org
  * @version $Revision$
@@ -68,7 +68,7 @@ import org.jboss.test.deployers.managed.support.MockProfileService;
 public class DeployerManagedDeploymentUnitTestCase extends AbstractManagedObjectUnitTest
 {
    private MCFDeployer deployer = new MCFDeployer();
-   
+
    public static Test suite()
    {
       return new TestSuite(DeployerManagedDeploymentUnitTestCase.class);
@@ -170,7 +170,7 @@ public class DeployerManagedDeploymentUnitTestCase extends AbstractManagedObject
       ManagedProperty targetProp = mc.getProperty("jndi-name");
       assertNotNull(targetProp);
       targetProp.setValue(getMetaValueFactory().create("java:DefaultDS2"));
-      // test target runtime component invocation (if intendet here)      
+      // test target runtime component invocation (if intendet here)
    }
 
    public void testManagedDeployment() throws Exception
@@ -180,7 +180,7 @@ public class DeployerManagedDeploymentUnitTestCase extends AbstractManagedObject
       ManagedObjectFactory mof = ManagedObjectFactory.getInstance();
       TestServiceMetaDataICF tsicf = new TestServiceMetaDataICF();
       mof.setInstanceClassFactory(TestServiceMetaData.class, tsicf);
-      
+
       // Deploy a datasource with local and xa factories
       Deployment ctx1 = createSimpleDeployment("deployment1");
       DSMetaData dsmd = new DSMetaData();
@@ -310,7 +310,7 @@ public class DeployerManagedDeploymentUnitTestCase extends AbstractManagedObject
       // Validate that the sec-domain1 ManagedObject is the target of the localSecDomainRefProp
       log.info("sec-domain1 ManagedObjectNames: "+ secMD1.getManagedObjectNames());
       ManagedObject sd1MO = secMD1.getManagedObject("java:/jaas/domain1");
-      
+
       assertNotNull("java:/jaas/domain1 MO", sd1MO);
       ManagedObject localSecDomainPropTarget = localSecDomainRefProp.getTargetManagedObject();
       assertEquals(sd1MO, localSecDomainPropTarget);
@@ -328,7 +328,7 @@ public class DeployerManagedDeploymentUnitTestCase extends AbstractManagedObject
       ManagedOperation closePool = null;
       ManagedOperation takesString = null;
       ManagedOperation constrainedIntx10 = null;
-      
+
       for(ManagedOperation op : localDataOps)
       {
          if (op.getName().equals("flushPool"))
@@ -339,7 +339,7 @@ public class DeployerManagedDeploymentUnitTestCase extends AbstractManagedObject
             takesString = op;
          if (op.getName().equals("constrainedIntx10"))
             constrainedIntx10 = op;
-         
+
       }
       // flushPool
       assertNotNull("flushPool found", flushPool);
@@ -371,21 +371,21 @@ public class DeployerManagedDeploymentUnitTestCase extends AbstractManagedObject
       assertEquals("constrainedIntx10", constrainedIntx10.getName());
       assertEquals("Takes an int and multiples by 10", constrainedIntx10.getDescription());
       assertEquals(ManagedOperation.Impact.ReadOnly, constrainedIntx10.getImpact());
-      assertEquals(SimpleMetaType.INTEGER, constrainedIntx10.getReturnType());
+      assertEquals(SimpleMetaType.INTEGER_PRIMITIVE, constrainedIntx10.getReturnType());
       ManagedParameter[] constrainedIntx10Params = constrainedIntx10.getParameters();
       assertEquals("one params", 1, constrainedIntx10Params.length);
       assertEquals("param name", "input", constrainedIntx10Params[0].getName());
       assertEquals("param description", "The int to multiple", constrainedIntx10Params[0].getDescription());
-      assertEquals("param type", SimpleMetaType.INTEGER, constrainedIntx10Params[0].getMetaType());
+      assertEquals("param type", SimpleMetaType.INTEGER_PRIMITIVE, constrainedIntx10Params[0].getMetaType());
       Object min = constrainedIntx10Params[0].getMinimumValue();
       assertEquals("param min is 0", 0, (MetaValue)min);
       assertEquals("param min is 100", 100, (MetaValue)constrainedIntx10Params[0].getMaximumValue());
-      
+
       // Validate that the localDataMO includes the runtime properties
       ManagedProperty rtp1 = localDataProps.get("runtimeProp1");
       assertNotNull("runtimeProp1", rtp1);
       ManagedProperty rtp2 = localDataProps.get("runtimeProp2");
-      assertNotNull("runtimeProp2", rtp2);      
+      assertNotNull("runtimeProp2", rtp2);
    }
 
    protected DeployerClient getMainDeployer()

@@ -36,6 +36,7 @@ import org.jboss.dependency.spi.DependencyInfo;
 import org.jboss.dependency.spi.DependencyItem;
 import org.jboss.deployers.client.spi.main.MainDeployer;
 import org.jboss.deployers.spi.DeploymentException;
+import org.jboss.deployers.spi.deployer.DeploymentStage;
 import org.jboss.deployers.spi.attachments.MutableAttachments;
 import org.jboss.deployers.spi.attachments.helpers.AbstractMutableAttachments;
 import org.jboss.deployers.structure.spi.ClassLoaderFactory;
@@ -55,6 +56,7 @@ import org.jboss.metadata.spi.scope.ScopeKey;
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author Scott.Stark@jboss.org
+ * @author <a href="ales.justin@jboss.com">Ales Justin</a>
  * @version $Revision: 1.1 $
  */
 public class AbstractDeploymentUnit extends AbstractMutableAttachments implements DeploymentUnit
@@ -459,6 +461,16 @@ public class AbstractDeploymentUnit extends AbstractMutableAttachments implement
    {
       UnitVisitorToContextVisitor contextVisitor = new UnitVisitorToContextVisitor(visitor); 
       getDeploymentContext().visit(contextVisitor);
+   }
+
+   public Object getControllerContextName()
+   {
+      return getDeploymentContext().getControllerContextName();
+   }
+
+   public void setRequiredStage(DeploymentStage stage)
+   {
+      getDeploymentContext().setRequiredStage(stage);
    }
 
    public DependencyInfo getDependencyInfo()

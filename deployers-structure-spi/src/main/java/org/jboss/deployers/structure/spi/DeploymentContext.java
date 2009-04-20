@@ -29,6 +29,7 @@ import org.jboss.dependency.spi.DependencyInfo;
 import org.jboss.deployers.client.spi.Deployment;
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.DeploymentState;
+import org.jboss.deployers.spi.deployer.DeploymentStage;
 import org.jboss.deployers.spi.attachments.ManagedObjectsWithTransientAttachments;
 import org.jboss.metadata.spi.MetaData;
 import org.jboss.metadata.spi.MutableMetaData;
@@ -39,6 +40,7 @@ import org.jboss.metadata.spi.scope.ScopeKey;
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author Scott.Stark@jboss.org
+ * @author <a href="ales.justin@jboss.com">Ales Justin</a>
  * @version $Revision: 59630 $
  */
 public interface DeploymentContext extends ManagedObjectsWithTransientAttachments
@@ -338,6 +340,20 @@ public interface DeploymentContext extends ManagedObjectsWithTransientAttachment
     */
    ClassLoader getResourceClassLoader();
    
+   /**
+    * Get underlying controller context name.
+    *
+    * @return the controller context name
+    */
+   Object getControllerContextName();
+
+   /**
+    * Set the required stage.
+    *
+    * @param stage the required stage
+    */
+   void setRequiredStage(DeploymentStage stage);
+
    /**
     * Get the dependency info
     * 

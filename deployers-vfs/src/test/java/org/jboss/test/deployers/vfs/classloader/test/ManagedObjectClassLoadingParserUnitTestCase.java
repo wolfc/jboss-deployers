@@ -44,7 +44,7 @@ import org.jboss.test.deployers.BootstrapDeployersTest;
 
 /**
  * ManagedObjectClassLoadingParserUnitTestCase.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.1 $
  */
@@ -62,7 +62,7 @@ public class ManagedObjectClassLoadingParserUnitTestCase extends BootstrapDeploy
    {
       super(name);
    }
-   
+
    protected ManagedProperty assertManagedProperty(ManagedObject mo, String name, MetaType metaType, MetaValue metaValue)
    {
       ManagedProperty property = mo.getProperty(name);
@@ -71,7 +71,7 @@ public class ManagedObjectClassLoadingParserUnitTestCase extends BootstrapDeploy
       assertEquals(metaValue, property.getValue());
       return property;
    }
-   
+
    protected <T> ManagedProperty assertManagedProperty(ManagedObject mo, String name, Class<T> type, T value)
    {
       MetaType metaType = mtFactory.resolve(type);
@@ -114,11 +114,11 @@ public class ManagedObjectClassLoadingParserUnitTestCase extends BootstrapDeploy
          assertManagedProperty(mo, "included", String.class, null);
          assertManagedProperty(mo, "excluded", String.class, null);
          assertManagedProperty(mo, "excludedExport", String.class, null);
-         assertManagedProperty(mo, "importAll", Boolean.class, false);
-         assertManagedProperty(mo, "parentFirst", Boolean.class, true);
+         assertManagedProperty(mo, "importAll", boolean.class, false);
+         assertManagedProperty(mo, "parentFirst", boolean.class, true);
          assertManagedProperty(mo, "capabilities", CapabilitiesMetaData.class, new CapabilitiesMetaData());
          assertManagedProperty(mo, "requirements", RequirementsMetaData.class, new RequirementsMetaData());
-         
+
       }
       finally
       {

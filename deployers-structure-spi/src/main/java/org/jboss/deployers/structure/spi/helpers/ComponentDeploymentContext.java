@@ -40,6 +40,7 @@ import org.jboss.dependency.spi.DependencyInfo;
 import org.jboss.deployers.client.spi.Deployment;
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.DeploymentState;
+import org.jboss.deployers.spi.deployer.DeploymentStage;
 import org.jboss.deployers.spi.attachments.Attachments;
 import org.jboss.deployers.spi.attachments.AttachmentsFactory;
 import org.jboss.deployers.spi.attachments.MutableAttachments;
@@ -60,6 +61,7 @@ import org.jboss.metadata.spi.scope.ScopeKey;
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author Scott.Stark@jboss.org
+ * @author <a href="ales.justin@jboss.com">Ales Justin</a>
  * @version $Revision: 59630 $
  */
 public class ComponentDeploymentContext implements DeploymentContext, ComponentDeploymentContextMBean, MBeanRegistration
@@ -420,6 +422,16 @@ public class ComponentDeploymentContext implements DeploymentContext, ComponentD
    public DeploymentResourceLoader getResourceLoader()
    {
       return parent.getResourceLoader();
+   }
+
+   public Object getControllerContextName()
+   {
+      return parent.getControllerContextName();
+   }
+
+   public void setRequiredStage(DeploymentStage stage)
+   {
+      parent.setRequiredStage(stage);
    }
 
    public DependencyInfo getDependencyInfo()

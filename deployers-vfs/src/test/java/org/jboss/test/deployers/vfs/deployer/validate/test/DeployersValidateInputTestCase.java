@@ -22,6 +22,8 @@
 package org.jboss.test.deployers.vfs.deployer.validate.test;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.Test;
 import org.jboss.deployers.spi.DeploymentException;
@@ -36,6 +38,7 @@ import org.jboss.test.deployers.vfs.deployer.validate.support.MyVFSDeploymentCon
 import org.jboss.test.deployers.vfs.deployer.validate.support.MyVirtualFile;
 import org.jboss.test.deployers.vfs.deployer.validate.support.TestXmlDeployer;
 import org.jboss.virtual.VirtualFile;
+import org.jboss.xb.binding.JBossXBException;
 
 /**
  * Validate deployers.
@@ -60,20 +63,17 @@ public class DeployersValidateInputTestCase extends BaseTestCase
       TestXmlDeployer xmlDeployer = new TestXmlDeployer();
       xmlDeployer.create();
 
-      AbstractVFSParsingDeployer<?>[] deployers = new AbstractVFSParsingDeployer<?>[]
-            {
-                  new Properties2BeansDeployer(),
-                  new MockBshDeployer(),
-//                  new TestJaxbDeployer(),
-                  xmlDeployer,
-                  new SchemaResolverDeployer<Object>(Object.class),
-            };
+      Map<AbstractVFSParsingDeployer<?>, Class<? extends Exception>> map = new HashMap<AbstractVFSParsingDeployer<?>, Class<? extends Exception>>();
+      map.put(new Properties2BeansDeployer(), IOException.class);
+      map.put(new MockBshDeployer(), IOException.class);
+      map.put(xmlDeployer, RuntimeException.class);
+      map.put(new SchemaResolverDeployer<Object>(Object.class), JBossXBException.class);
 
       VirtualFile root = new MyVirtualFile();
       AbstractVFSDeploymentContext context = new MyVFSDeploymentContext(root, "");
       DeploymentUnit unit = context.getDeploymentUnit();
 
-      for(AbstractVFSParsingDeployer<?> deployer : deployers)
+      for(AbstractVFSParsingDeployer<?> deployer : map.keySet())
       {
          // set name to "" to match in deployment
          deployer.setName("");
@@ -85,7 +85,11 @@ public class DeployersValidateInputTestCase extends BaseTestCase
          catch(Exception e)
          {
             assertInstanceOf(e, DeploymentException.class);
-            assertInstanceOf(e.getCause(), IOException.class);
+            Throwable cause = e.getCause();
+            if (map.get(deployer).isInstance(cause) == false)
+            {
+               fail("Illegal exception cause: " + cause);
+            }
          }
       }
    }

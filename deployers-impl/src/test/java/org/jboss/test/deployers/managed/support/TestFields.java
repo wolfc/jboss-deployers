@@ -25,7 +25,7 @@ import org.jboss.managed.api.Fields;
 
 /**
  * TestFields.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.1 $
  */
@@ -35,9 +35,9 @@ public class TestFields implements Fields
    private static final long serialVersionUID = 1L;
 
    private TestAttachment attachment;
-   
+
    private String property;
-   
+
    public TestFields(TestAttachment attachment, String property)
    {
       this.attachment = attachment;
@@ -60,6 +60,15 @@ public class TestFields implements Fields
          attachment.setProperty(property, value);
          return;
       }
-      throw new UnsupportedOperationException("setField: " + name);
+      else if (name != Fields.MODIFIED)
+      {
+         throw new UnsupportedOperationException("setField: " + name);
+      }
+   }
+
+
+   public Fields copy()
+   {
+      return new TestFields(attachment.clone(), property);
    }
 }

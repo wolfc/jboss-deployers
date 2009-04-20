@@ -44,9 +44,11 @@ import javax.management.ObjectName;
 import org.jboss.classloading.spi.RealClassLoader;
 import org.jboss.dependency.spi.ControllerContext;
 import org.jboss.dependency.spi.DependencyInfo;
+import org.jboss.dependency.spi.ControllerState;
 import org.jboss.deployers.client.spi.Deployment;
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.DeploymentState;
+import org.jboss.deployers.spi.deployer.DeploymentStage;
 import org.jboss.deployers.spi.attachments.Attachments;
 import org.jboss.deployers.spi.attachments.MutableAttachments;
 import org.jboss.deployers.spi.attachments.helpers.ManagedObjectsWithTransientAttachmentsImpl;
@@ -72,6 +74,7 @@ import org.jboss.metadata.spi.scope.ScopeKey;
  * 
  * @author <a href="adrian@jboss.org">Adrian Brock</a>
  * @author Scott.Stark@jboss.org
+ * @author <a href="ales.justin@jboss.com">Ales Justin</a>
  * @version $Revision: 1.1 $
  */
 public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttachmentsImpl implements DeploymentContext, AbstractDeploymentContextMBean, MBeanRegistration
@@ -752,16 +755,53 @@ public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttach
       return EmptyResourceLoader.INSTANCE;
    }
 
-   public DependencyInfo getDependencyInfo()
+   public Object getControllerContextName()
    {
       ControllerContext controllerContext = getTransientAttachments().getAttachment(ControllerContext.class);
       if (controllerContext != null)
-         return controllerContext.getDependencyInfo();
+      {
+         return controllerContext.getName();
+      }
       else
       {
          DeploymentContext parent = getParent();
          if (parent == null)
             throw new IllegalStateException("Deployment ControllerContext has not been set");
+
+         return parent.getControllerContextName();
+      }
+   }
+
+   public void setRequiredStage(DeploymentStage stage)
+   {
+      ControllerContext controllerContext = getTransientAttachments().getAttachment(ControllerContext.class);
+      if (controllerContext != null)
+      {
+         controllerContext.setRequiredState(new ControllerState(stage.getName()));
+      }
+      else
+      {
+         DeploymentContext parent = getParent();
+         if (parent == null)
+            throw new IllegalStateException("Deployment ControllerContext has not been set");
+
+         parent.setRequiredStage(stage);
+      }
+   }
+
+   public DependencyInfo getDependencyInfo()
+   {
+      ControllerContext controllerContext = getTransientAttachments().getAttachment(ControllerContext.class);
+      if (controllerContext != null)
+      {
+         return controllerContext.getDependencyInfo();
+      }
+      else
+      {
+         DeploymentContext parent = getParent();
+         if (parent == null)
+            throw new IllegalStateException("Deployment ControllerContext has not been set");
+
          return parent.getDependencyInfo();
       }
    }
