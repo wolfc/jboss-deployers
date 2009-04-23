@@ -35,10 +35,11 @@ import org.jboss.test.deployers.vfs.deployer.bean.test.BuilderBeansUnitTestCase;
 import org.jboss.test.deployers.vfs.deployer.bean.test.KernelDeployerUnitTestCase;
 import org.jboss.test.deployers.vfs.deployer.bean.test.KernelScopeUnitTestCase;
 import org.jboss.test.deployers.vfs.deployer.bean.test.AutowireAnnotationBeansTestCase;
+import org.jboss.test.deployers.vfs.deployer.bean.test.VFSRedeployTestCase;
 
 /**
  * BeanDeployerTestSuite.
- * 
+ *
  * @author <a href="adrian@jboss.org">Adrian Brock</a>
  * @author <a href="ales.justin@jboss.org">Ales Justin</a>
  * @version $Revision: 1.1 $
@@ -65,6 +66,7 @@ public class BeanDeployerTestSuite extends TestSuite
       suite.addTest(AnnotatedBeansUnitTestCase.suite());
       suite.addTest(BuilderBeansUnitTestCase.suite());
       suite.addTest(AutowireAnnotationBeansTestCase.suite());
+      suite.addTest(VFSRedeployTestCase.suite());
 
       return suite;
    }
