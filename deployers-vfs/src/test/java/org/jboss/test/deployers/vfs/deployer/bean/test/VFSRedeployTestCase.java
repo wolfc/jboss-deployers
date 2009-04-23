@@ -60,17 +60,20 @@ public class VFSRedeployTestCase extends AbstractDeployerUnitTest
 
    public void setUp() throws Exception
    {
+      super.setUp();
+
       LRUVFSCache cache = new LRUVFSCache(50, 100);
       cache.start();
       VFSCacheFactory.setInstance(cache);
-
-      super.setUp();
    }
 
    public void tearDown() throws Exception
    {
       VFSCacheFactory.setInstance(null);
+
+      super.tearDown();
    }
+
 
    @SuppressWarnings("deprecation")
    public static class VerifyVirtualFileDeployer extends org.jboss.deployers.vfs.spi.deployer.AbstractVFSRealDeployer
