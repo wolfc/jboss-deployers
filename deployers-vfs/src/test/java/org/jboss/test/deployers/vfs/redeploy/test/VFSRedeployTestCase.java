@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import junit.framework.Test;
 import org.jboss.deployers.client.spi.DeployerClient;
 import org.jboss.deployers.spi.DeploymentException;
+import org.jboss.deployers.spi.DeploymentState;
 import org.jboss.deployers.vfs.spi.client.VFSDeployment;
 import org.jboss.deployers.vfs.spi.structure.VFSDeploymentUnit;
 import org.jboss.deployers.vfs.plugins.structure.jar.JARStructure;
@@ -117,8 +118,15 @@ public class VFSRedeployTestCase extends BaseDeployersVFSTest
       addStructureDeployer(main, new JARStructure());
 
       VFSDeployment context = createDeployment("/bean", "/toplevel/test.jar");
-      addDeployment(main, context);
-      assertUndeploy(main, context);
+      try
+      {
+         addDeployment(main, context);
+         assertEquals("Should be Deployed " + context, DeploymentState.DEPLOYED, main.getDeploymentState(context.getName()));
+      }
+      finally
+      {
+         assertUndeploy(main, context);
+      }
    }
 
    public void testRedeploy() throws Exception
@@ -127,8 +135,16 @@ public class VFSRedeployTestCase extends BaseDeployersVFSTest
       addStructureDeployer(main, new JARStructure());
 
       VFSDeployment context = createDeployment("/bean", "/toplevel/test.jar");
-      addDeployment(main, context);
-      addDeployment(main, context);
-      assertUndeploy(main, context);
+      try
+      {
+         addDeployment(main, context);
+         assertEquals("Should be Deployed " + context, DeploymentState.DEPLOYED, main.getDeploymentState(context.getName()));
+         addDeployment(main, context);
+         assertEquals("Should be Deployed " + context, DeploymentState.DEPLOYED, main.getDeploymentState(context.getName()));
+      }
+      finally
+      {
+         assertUndeploy(main, context);
+      }
    }
 }
