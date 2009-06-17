@@ -24,10 +24,12 @@ package org.jboss.deployers.vfs.spi.structure.modified;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.virtual.plugins.vfs.helpers.PathTokenizer;
 
@@ -37,7 +39,7 @@ import org.jboss.virtual.plugins.vfs.helpers.PathTokenizer;
  * @param <T> exact value type
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TreeStructureCache<T> implements StructureCache<T>
+public class TreeStructureCache<T> extends AbstractStructureCache<T>
 {
    /** The tree root */
    private final Node<T> root = createRoot();
@@ -69,10 +71,8 @@ public class TreeStructureCache<T> implements StructureCache<T>
 
    public T putCacheValue(String pathName, T value)
    {
-      Node<T> node = getNode(pathName);
-      if (node == null)
-         node = initializeNode(pathName);
-
+      // we try to initialize it if it doesn't exist
+      Node<T> node = initializeNode(pathName);
       T previous = node.getValue();
       node.setValue(value);
       return previous;
@@ -84,10 +84,33 @@ public class TreeStructureCache<T> implements StructureCache<T>
       return (node != null ? node.getValue() : null);
    }
 
-   public Set<String> getLeaves(String pathName)
+   public Set<String> getLeaves(String pathName, StructureCacheFilter filter)
    {
       Node<T> node = getNode(pathName);
-      return (node != null) ? node.getChildrenNames() : null;
+      if (node != null)
+      {
+         Set<String> children = node.getChildrenNames();
+         if (filter != null && children != null && children.isEmpty() == false)
+         {
+            Set<String> result = new HashSet<String>();
+            for (String child : children)
+            {
+               if (filter.accepts(child))
+               {
+                  result.add(child);
+               }
+            }
+            return result;
+         }
+         else
+         {
+            return children;
+         }
+      }
+      else
+      {
+         return null;
+      }
    }
 
    public void invalidateCache(String pathName)
@@ -180,6 +203,8 @@ public class TreeStructureCache<T> implements StructureCache<T>
     */
    private class Node<U>
    {
+      private ReadWriteLock lock = new ReentrantReadWriteLock();
+
       private String name;
       private String fullName;
       private Node<U> parent;
@@ -266,13 +291,21 @@ public class TreeStructureCache<T> implements StructureCache<T>
        */
       private void addChild(Node<U> node)
       {
-         if (children == null)
-            children = new HashMap<String, Node<U>>();
+         lock.writeLock().lock();
+         try
+         {
+            if (children == null)
+               children = new HashMap<String, Node<U>>();
 
-         children.put(node.getName(), node);
+            children.put(node.getName(), node);
 
-         if (names != null)
-            names.add(node.getFullName());
+            if (names != null)
+               names.add(node.getFullName());
+         }
+         finally
+         {
+            lock.writeLock().unlock();
+         }
       }
 
       /**
@@ -280,20 +313,28 @@ public class TreeStructureCache<T> implements StructureCache<T>
        *
        * @param node the child node
        */
-      public synchronized void removeChild(Node<U> node)
+      public void removeChild(Node<U> node)
       {
-         if (children == null)
-            return;
-         
-         children.remove(node.getName());
+         lock.writeLock().lock();
+         try
+         {
+            if (children == null)
+               return;
 
-         if (names != null)
-            names.remove(node.getFullName());
+            children.remove(node.getName());
 
-         if (children.isEmpty())
-            children = null;
-         if (names != null && names.isEmpty())
-            names = null;
+            if (names != null)
+               names.remove(node.getFullName());
+
+            if (children.isEmpty())
+               children = null;
+            if (names != null && names.isEmpty())
+               names = null;
+         }
+         finally
+         {
+            lock.writeLock().unlock();
+         }
       }
 
       /**
@@ -301,9 +342,17 @@ public class TreeStructureCache<T> implements StructureCache<T>
        */
       void clear()
       {
-         value = null;
-         children = null;
-         names = null;
+         lock.writeLock().lock();
+         try
+         {
+            value = null;
+            children = null;
+            names = null;
+         }
+         finally
+         {
+            lock.writeLock().unlock();
+         }
       }
 
       /**
@@ -314,7 +363,15 @@ public class TreeStructureCache<T> implements StructureCache<T>
        */
       public Node<U> getChild(String name)
       {
-         return (children != null) ? children.get(name) : null;
+         lock.readLock().lock();
+         try
+         {
+            return (children != null) ? children.get(name) : null;
+         }
+         finally
+         {
+            lock.readLock().unlock();
+         }
       }
 
       /**
@@ -322,20 +379,29 @@ public class TreeStructureCache<T> implements StructureCache<T>
        *
        * @return the children names
        */
-      public synchronized Set<String> getChildrenNames()
+      public Set<String> getChildrenNames()
       {
-         if (children == null)
-            return Collections.emptySet();
-
-         if (names == null)
+         lock.writeLock().lock();
+         try
          {
-            names = new HashSet<String>();
-            for (Node<U> child : children.values())
+            if (children == null)
+               return Collections.emptySet();
+
+            // TODO; I don't understand how can I get non-null names, but not equal to children
+            if (names == null || (names.size() != children.size()))
             {
-               names.add(child.getFullName());
+               names = new HashSet<String>();
+               for (Node<U> child : children.values())
+               {
+                  names.add(child.getFullName());
+               }
             }
+            return names;
          }
-         return names;
+         finally
+         {
+            lock.writeLock().unlock();
+         }
       }
 
       /**
@@ -345,7 +411,21 @@ public class TreeStructureCache<T> implements StructureCache<T>
        */
       public Collection<Node<U>> getChildren()
       {
-         return (children != null) ? children.values() : Collections.<Node<U>>emptySet();
+         lock.readLock().lock();
+         try
+         {
+            return (children != null) ? children.values() : Collections.<Node<U>>emptySet();
+         }
+         finally
+         {
+            lock.readLock().unlock();
+         }
+      }
+
+      @Override
+      public String toString()
+      {
+         return getFullName();
       }
    }
 }

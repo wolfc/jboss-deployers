@@ -19,19 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.deployers.vfs.structure.modified.support;
-
-import org.jboss.deployers.vfs.spi.structure.modified.AbstractPathNameFilter;
+package org.jboss.deployers.vfs.spi.structure.modified;
 
 /**
- * Include only .xml files.
+ * Simple structure cache filter.
  *
- * @author <a href="mailto:ales.justin@jboss.com">Ales Justin</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class XmlIncludeVirtualFileFilter extends AbstractPathNameFilter
+public interface StructureCacheFilter
 {
-   public boolean accepts(String path)
-   {
-      return path.endsWith(".xml");
-   }
+   /**
+    * Do we accept the path.
+    *
+    * @param path the full path
+    * @return true if the path is accepted, false otherwise
+    */
+   boolean accepts(String path);
 }

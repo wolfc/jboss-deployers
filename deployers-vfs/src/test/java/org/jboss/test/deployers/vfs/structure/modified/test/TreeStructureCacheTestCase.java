@@ -19,19 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.deployers.vfs.structure.modified.support;
+package org.jboss.test.deployers.vfs.structure.modified.test;
 
-import org.jboss.deployers.vfs.spi.structure.modified.AbstractPathNameFilter;
+import org.jboss.deployers.vfs.spi.structure.modified.StructureCache;
+import org.jboss.deployers.vfs.spi.structure.modified.TreeStructureCache;
 
 /**
- * Include only .xml files.
+ * TreeStructureCache tests.
  *
- * @author <a href="mailto:ales.justin@jboss.com">Ales Justin</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class XmlIncludeVirtualFileFilter extends AbstractPathNameFilter
+public class TreeStructureCacheTestCase extends AbstractStructureCacheTest
 {
-   public boolean accepts(String path)
+   public TreeStructureCacheTestCase(String name)
    {
-      return path.endsWith(".xml");
+      super(name);
+   }
+
+   protected StructureCache<Long> createStructureCache()
+   {
+      return new TreeStructureCache<Long>();
    }
 }

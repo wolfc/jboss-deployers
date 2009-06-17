@@ -36,6 +36,14 @@ import org.jboss.virtual.VirtualFileFilter;
 /**
  * MetaDataStructureModificationChecker.
  *
+ * VFS and structure cache filter must be compatible,
+ * meaning they would return same value for equal files/paths.
+ *
+ * e.g.
+ * VirtualFile file = VFS.getVirtualFile(rootURI, "/my-app.jar/META-INF/somefile.xml");
+ * String cachedPath = "/my-app.jar/META-INF/somefile.xml";
+ * filter.accepts(file) == cacheFilter.accepts(cachedPath)
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class MetaDataStructureModificationChecker extends AbstractStructureModificationChecker<Long>
@@ -45,6 +53,9 @@ public class MetaDataStructureModificationChecker extends AbstractStructureModif
 
    /** The metadata filter */
    private VirtualFileFilter filter;
+
+   /** The structure cache filter */
+   private StructureCacheFilter cacheFilter;
 
    public MetaDataStructureModificationChecker(MainDeployerStructure mainDeployer)
    {
@@ -59,6 +70,35 @@ public class MetaDataStructureModificationChecker extends AbstractStructureModif
    public void setFilter(VirtualFileFilter filter)
    {
       this.filter = filter;
+   }
+
+   /**
+    * Set the structure cache filter.
+    *
+    * @param cacheFilter the cache filter
+    */
+   public void setCacheFilter(StructureCacheFilter cacheFilter)
+   {
+      this.cacheFilter = cacheFilter;
+   }
+
+   /**
+    * Check filters.
+    */
+   public void start()
+   {
+      if (cacheFilter == null)
+      {
+         if (filter instanceof StructureCacheFilter)
+            cacheFilter = (StructureCacheFilter) filter;
+         else
+            log.warn("No cache filter specified, possible non match on leaves.");
+      }
+      else if (cacheFilter != filter)
+      {
+         // not the same instance
+         log.debug("VFS filter and structure cache filter are not the same instance, possible compatibility issue?");
+      }
    }
 
    @Override
@@ -143,7 +183,7 @@ public class MetaDataStructureModificationChecker extends AbstractStructureModif
                {
                   List<VirtualFile> children = mdpVF.getChildren(filter);
                   String mdpPathName = mdpVF.getPathName();
-                  Set<String> leaves = getCache().getLeaves(mdpPathName);
+                  Set<String> leaves = getCache().getLeaves(mdpPathName, cacheFilter);
                   // do we have some new files or some were deleted
                   if (leaves != null && children != null && leaves.size() != children.size())
                   {
