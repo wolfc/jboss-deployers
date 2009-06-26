@@ -43,4 +43,22 @@ public interface Dots<T>
     * @return true if these dots match param dots
     */
    boolean match(Dots<T> dots);
+
+   /**
+    * Do this dots contain the param dots.
+    * In most cases this should be te same as a match.
+    *
+    * @param dots the dots
+    * @return true if these dots contain param dots
+    */
+   boolean contains(Dots<T> dots);
+
+   /**
+    * The dimension of different dots.
+    * For strict domino dots this would be one,
+    * in our string set case this is the size of the set.
+    *
+    * @return the dimension of dots 
+    */
+   int dimension();
 }

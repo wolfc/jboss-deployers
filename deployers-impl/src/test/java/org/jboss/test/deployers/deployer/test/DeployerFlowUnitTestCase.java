@@ -842,4 +842,189 @@ public class DeployerFlowUnitTestCase extends AbstractDeployerTest
       postWMD.setOutputs("JBWMD");
       addDeployer(main, postWMD);
    }
+
+   public void testWebServicesDeployersOrder() throws Exception
+   {
+      DeployerClient main = createMainDeployer();
+
+      TestFlowDeployer deployer1 = new TestFlowDeployer("FakeDeployer");
+      deployer1.setOutputs("WebServicesMetaData", "WebServiceDeployment", "JBossWebMetaData" );
+      addDeployer(main, deployer1);
+
+      TestFlowDeployer deployer2 = new TestFlowDeployer("WebServicesDeploymentTypeDeployer");
+      deployer2.setInputs("WebServicesMetaData", "WebServiceDeployment", "JBossWebMetaData" );
+      deployer2.setOutputs("DeploymentType", "JBossWebMetaData");
+      addDeployer(main, deployer2);
+
+      TestFlowDeployer deployer4 = new TestFlowDeployer("WebServiceDeployerPreJSE");
+      deployer4.setInputs("JBossWebMetaData", "DeploymentType");
+      deployer4.setOutputs("JBossWebMetaData");
+      addDeployer(main, deployer4);
+
+      TestFlowDeployer deployer5 = new TestFlowDeployer("AbstractWarDeployer");
+      deployer5.setInputs("JBossWebMetaData");
+      deployer5.setOutputs("WarDeployment");
+      addDeployer(main, deployer5);
+
+      TestFlowDeployer deployer6 = new TestFlowDeployer("ServiceCL");
+      deployer6.setInputs("DeploymentType", "WarDeployment");
+      addDeployer(main, deployer6);
+
+      // #2 duplicate
+      TestFlowDeployer deployer3 = new TestFlowDeployer("WebServicesDeploymentTypeDeployer2");
+      deployer3.setInputs("WebServicesMetaData", "WebServiceDeployment", "JBossWebMetaData" );
+      deployer3.setOutputs("DeploymentType", "JBossWebMetaData");
+      addDeployer(main, deployer3);
+
+      // #4 duplicate
+      TestFlowDeployer deployer7 = new TestFlowDeployer("WebServiceDeployerEJB");
+      deployer7.setInputs("JBossWebMetaData", "DeploymentType");
+      deployer7.setOutputs("JBossWebMetaData");
+      addDeployer(main, deployer7);
+
+      Deployment deployment = createSimpleDeployment("testWSDeploymentOrder");
+      main.addDeployment(deployment);
+      main.process();
+
+      assertEquals(1, deployer1.getDeployOrder());
+      assertEquals(2, deployer2.getDeployOrder());
+      assertEquals(3, deployer3.getDeployOrder());
+      assertEquals(4, deployer7.getDeployOrder());
+      assertEquals(5, deployer4.getDeployOrder());
+      assertEquals(6, deployer5.getDeployOrder());
+      assertEquals(7, deployer6.getDeployOrder());
+      assertEquals(-1, deployer1.getUndeployOrder());
+      assertEquals(-1, deployer2.getUndeployOrder());
+      assertEquals(-1, deployer3.getUndeployOrder());
+      assertEquals(-1, deployer4.getUndeployOrder());
+      assertEquals(-1, deployer5.getUndeployOrder());
+      assertEquals(-1, deployer6.getUndeployOrder());
+
+      main.removeDeployment(deployment);
+      main.process();
+
+      assertEquals(1, deployer1.getDeployOrder());
+      assertEquals(2, deployer2.getDeployOrder());
+      assertEquals(3, deployer3.getDeployOrder());
+      assertEquals(4, deployer7.getDeployOrder());
+      assertEquals(5, deployer4.getDeployOrder());
+      assertEquals(6, deployer5.getDeployOrder());
+      assertEquals(7, deployer6.getDeployOrder());
+      assertEquals(14, deployer1.getUndeployOrder());
+      assertEquals(13, deployer2.getUndeployOrder());
+      assertEquals(12, deployer3.getUndeployOrder());
+      assertEquals(11, deployer7.getUndeployOrder());
+      assertEquals(10, deployer4.getUndeployOrder());
+      assertEquals(9, deployer5.getUndeployOrder());
+      assertEquals(8, deployer6.getUndeployOrder());
+
+      main.addDeployment(deployment);
+      main.process();
+
+      assertEquals(15, deployer1.getDeployOrder());
+      assertEquals(16, deployer2.getDeployOrder());
+      assertEquals(17, deployer3.getDeployOrder());
+      assertEquals(18, deployer7.getDeployOrder());
+      assertEquals(19, deployer4.getDeployOrder());
+      assertEquals(20, deployer5.getDeployOrder());
+      assertEquals(21, deployer6.getDeployOrder());
+      assertEquals(14, deployer1.getUndeployOrder());
+      assertEquals(13, deployer2.getUndeployOrder());
+      assertEquals(12, deployer3.getUndeployOrder());
+      assertEquals(11, deployer7.getUndeployOrder());
+      assertEquals(10, deployer4.getUndeployOrder());
+      assertEquals(9, deployer5.getUndeployOrder());
+      assertEquals(8, deployer6.getUndeployOrder());
+
+      main.removeDeployment(deployment);
+      main.process();
+   }
+
+   public void anotherDeployersOrderTest() throws Exception
+   {
+      DeployerClient main = createMainDeployer();
+
+      TestFlowDeployer deployer6 = new TestFlowDeployer( "6" );
+      deployer6.setInputs( "a11", "a12", "a13", "a14", "a33" );
+      addDeployer(main, deployer6);
+
+      TestFlowDeployer deployer5 = new TestFlowDeployer( "5" );
+      deployer5.setInputs( "a21", "a33", "a41" );
+      deployer5.setOutputs( "a33", "a51", "a52" );
+      addDeployer(main, deployer5);
+
+      TestFlowDeployer deployer4 = new TestFlowDeployer( "4" );
+      deployer4.setInputs( "a14", "a33" );
+      deployer4.setOutputs( "a14", "a33", "a41" );
+      addDeployer( main, deployer4 );
+
+      TestFlowDeployer deployer3 = new TestFlowDeployer( "3" );
+      deployer3.setInputs( "a13", "a21" );
+      deployer3.setOutputs( "a32", "a33" );
+      addDeployer( main, deployer3 );
+
+      TestFlowDeployer deployer2 = new TestFlowDeployer( "2" );
+      deployer2.setInputs( "a11", "a12" );
+      deployer2.setOutputs( "a12", "a21", "a22" );
+      addDeployer( main, deployer2 );
+
+      TestFlowDeployer deployer1 = new TestFlowDeployer( "1" );
+      deployer1.setOutputs( "a11", "a12", "a13", "a14" );
+      addDeployer( main, deployer1 );
+
+      Deployment deployment = createSimpleDeployment( "deployersOrderTest" );
+      main.addDeployment(deployment);
+      main.process();
+      
+      assertEquals(1, deployer1.getDeployOrder());
+      assertEquals(2, deployer2.getDeployOrder());
+      assertEquals(3, deployer3.getDeployOrder());
+      assertEquals(4, deployer4.getDeployOrder());
+      assertEquals(5, deployer5.getDeployOrder());
+      assertEquals(6, deployer6.getDeployOrder());
+      assertEquals(-1, deployer1.getUndeployOrder());
+      assertEquals(-1, deployer2.getUndeployOrder());
+      assertEquals(-1, deployer3.getUndeployOrder());
+      assertEquals(-1, deployer4.getUndeployOrder());
+      assertEquals(-1, deployer5.getUndeployOrder());
+      assertEquals(-1, deployer6.getUndeployOrder());
+
+      main.removeDeployment(deployment);
+      main.process();
+
+      assertEquals(1, deployer1.getDeployOrder());
+      assertEquals(2, deployer2.getDeployOrder());
+      assertEquals(3, deployer3.getDeployOrder());
+      assertEquals(4, deployer4.getDeployOrder());
+      assertEquals(5, deployer5.getDeployOrder());
+      assertEquals(6, deployer6.getDeployOrder());
+      assertEquals(12, deployer1.getUndeployOrder());
+      assertEquals(11, deployer2.getUndeployOrder());
+      assertEquals(10, deployer3.getUndeployOrder());
+      assertEquals(9, deployer4.getUndeployOrder());
+      assertEquals(8, deployer4.getUndeployOrder());
+      assertEquals(7, deployer5.getUndeployOrder());
+      assertEquals(6, deployer6.getUndeployOrder());
+
+      main.addDeployment(deployment);
+      main.process();
+
+      assertEquals(13, deployer1.getDeployOrder());
+      assertEquals(14, deployer2.getDeployOrder());
+      assertEquals(15, deployer3.getDeployOrder());
+      assertEquals(16, deployer4.getDeployOrder());
+      assertEquals(17, deployer5.getDeployOrder());
+      assertEquals(18, deployer6.getDeployOrder());
+      assertEquals(12, deployer1.getUndeployOrder());
+      assertEquals(11, deployer2.getUndeployOrder());
+      assertEquals(10, deployer3.getUndeployOrder());
+      assertEquals(9, deployer4.getUndeployOrder());
+      assertEquals(8, deployer4.getUndeployOrder());
+      assertEquals(7, deployer5.getUndeployOrder());
+      assertEquals(6, deployer6.getUndeployOrder());
+
+      main.removeDeployment(deployment);
+      main.process();
+   }
+
 }
