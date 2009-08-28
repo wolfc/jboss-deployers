@@ -936,7 +936,9 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
                }
             }
          }
-         contextsMissingDependencies.put(name, dependencies);
+
+         if (dependencies.isEmpty() == false)
+            contextsMissingDependencies.put(name, dependencies);
       }
    }
 
