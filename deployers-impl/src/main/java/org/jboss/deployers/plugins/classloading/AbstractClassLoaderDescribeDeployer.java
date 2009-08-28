@@ -48,6 +48,7 @@ public abstract class AbstractClassLoaderDescribeDeployer extends AbstractOption
    {
       super(ClassLoadingMetaData.class);
       setStage(DeploymentStages.DESCRIBE);
+      addOutput(Module.class); // we produce Module
    }
 
    /**
@@ -88,7 +89,7 @@ public abstract class AbstractClassLoaderDescribeDeployer extends AbstractOption
       {
          if (deployment == null)
             return;
-         
+
          // For non top level classloaders, we need to control the domain
          // since the parent is the deployment classloader
          String unitName = unit.getName();
@@ -102,7 +103,7 @@ public abstract class AbstractClassLoaderDescribeDeployer extends AbstractOption
             log.debug("Will create top level classloader for subdeployment: " + unitName);
          }
       }
-      
+
       // Create the module
       ClassLoaderPolicyModule module = createModule(unit, deployment);
       if (module != null)
@@ -119,6 +120,6 @@ public abstract class AbstractClassLoaderDescribeDeployer extends AbstractOption
          return;
       classLoading.removeModule(module);
    }
-   
+
    protected abstract ClassLoaderPolicyModule createModule(DeploymentUnit unit, ClassLoadingMetaData metaData) throws DeploymentException;
 }
