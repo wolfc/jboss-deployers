@@ -135,7 +135,7 @@ public abstract class AbstractStructureBuilderTest extends BaseTestCase
       return deployment;
    }
 
-   protected Deployment createdOrderedChildren() throws Exception
+   protected Deployment createOrderedChildren() throws Exception
    {
       DeploymentFactory factory = getDeploymentFactory();
       Deployment deployment = createDeployment(factory);
@@ -149,7 +149,7 @@ public abstract class AbstractStructureBuilderTest extends BaseTestCase
 
    public void testOrderedChildren() throws Exception
    {
-      Deployment deployment = createdOrderedChildren();
+      Deployment deployment = createOrderedChildren();
       DeploymentContext context = build(deployment);
       assertEquals("child1", context.getChildren().get(0).getRelativePath());
       assertEquals("child2", context.getChildren().get(1).getRelativePath());
