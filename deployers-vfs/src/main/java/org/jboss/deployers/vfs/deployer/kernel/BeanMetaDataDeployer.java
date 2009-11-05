@@ -21,8 +21,6 @@
 */
 package org.jboss.deployers.vfs.deployer.kernel;
 
-import java.util.Collection;
-
 import org.jboss.beans.metadata.plugins.AbstractClassLoaderMetaData;
 import org.jboss.beans.metadata.plugins.AbstractValueMetaData;
 import org.jboss.beans.metadata.spi.BeanMetaData;
@@ -36,8 +34,6 @@ import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.kernel.Kernel;
 import org.jboss.kernel.plugins.dependency.AbstractKernelControllerContext;
 import org.jboss.kernel.spi.dependency.KernelControllerContext;
-import org.jboss.metadata.spi.scope.Scope;
-import org.jboss.metadata.spi.scope.ScopeKey;
 
 /**
  * BeanMetaDataDeployer.<p>
@@ -124,27 +120,6 @@ public class BeanMetaDataDeployer extends AbstractSimpleRealDeployer<BeanMetaDat
       {
          throw DeploymentException.rethrowAsDeploymentException("Error deploying: " + deployment.getName(), t);
       }
-   }
-
-   /**
-    * Merge scope keys.
-    *
-    * @param contextKey the context key
-    * @param unitKey the unit key
-    */
-   protected static void mergeScopes(ScopeKey contextKey, ScopeKey unitKey)
-   {
-      if (contextKey == null)
-         return;
-      if (unitKey == null)
-         return;
-
-      Collection<Scope> unitScopes = unitKey.getScopes();
-      if (unitScopes == null || unitScopes.isEmpty())
-         return;
-
-      for (Scope scope : unitScopes)
-         contextKey.addScope(scope);
    }
 
    @Override
