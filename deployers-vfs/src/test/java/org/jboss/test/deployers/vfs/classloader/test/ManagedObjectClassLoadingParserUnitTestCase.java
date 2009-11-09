@@ -93,7 +93,7 @@ public class ManagedObjectClassLoadingParserUnitTestCase extends BootstrapDeploy
          assertNotNull(mo);
          getLog().debug("ManagedObject: " + mo + " properties=" + mo.getProperties());
 
-         List<String> expectedProperties = Arrays.asList("name", "version", "domain", "parentDomain", "exportAll", "included", "excluded", "excludedExport", "importAll", "parentFirst", "cache", "blackList", "capabilities", "requirements");
+         List<String> expectedProperties = Arrays.asList("name", "version", "domain", "parentDomain", "topLevelClassLoader", "exportAll", "included", "excluded", "excludedExport", "importAll", "parentFirst", "cache", "blackList", "capabilities", "requirements");
          Set<String> actualProperties = mo.getPropertyNames();
          for (String expected : expectedProperties)
          {
@@ -110,6 +110,7 @@ public class ManagedObjectClassLoadingParserUnitTestCase extends BootstrapDeploy
          assertManagedProperty(mo, "version", Version.class, Version.DEFAULT_VERSION);
          assertManagedProperty(mo, "domain", String.class, null);
          assertManagedProperty(mo, "parentDomain", String.class, null);
+         assertManagedProperty(mo, "topLevelClassLoader", boolean.class, false);
          assertManagedProperty(mo, "exportAll", ExportAll.class, null);
          assertManagedProperty(mo, "included", String.class, null);
          assertManagedProperty(mo, "excluded", String.class, null);
