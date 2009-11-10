@@ -41,7 +41,9 @@ public interface Dots<T>
     *
     * @param dots the dots
     * @return true if these dots match param dots
+    * @deprecated use intersect
     */
+   @Deprecated
    boolean match(Dots<T> dots);
 
    /**
@@ -50,8 +52,20 @@ public interface Dots<T>
     *
     * @param dots the dots
     * @return true if these dots contain param dots
+    * @deprecated use intersect
     */
+   @Deprecated
    boolean contains(Dots<T> dots);
+
+   /**
+    * Return the dimension of intersection.
+    * For strict domino that matches this would be one,
+    * in our case is the size of intersection set.
+    *
+    * @param dots the dots
+    * @return the intersection dimension
+    */
+   int intersect(Dots<T> dots);
 
    /**
     * The dimension of different dots.

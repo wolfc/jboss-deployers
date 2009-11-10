@@ -68,6 +68,14 @@ public class SetDots<V> implements Dots<Set<V>>
       return copy.retainAll(set) == false; 
    }
 
+   public int intersect(Dots<Set<V>> containable)
+   {
+      Set<V> otherSet = containable.getValue();
+      Set<V> copy = new HashSet<V>(otherSet);
+      copy.retainAll(set);
+      return copy.size();
+   }
+
    public int dimension()
    {
       return set.size();
