@@ -1523,6 +1523,7 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
             return false;
       }
 
+      // Check explicitly required inputs - short circut here instead of in the deployer
       Set<String> requiredInputs = deployer.getRequiredInputs();
       if (requiredInputs != null && requiredInputs.isEmpty() == false)
       {
