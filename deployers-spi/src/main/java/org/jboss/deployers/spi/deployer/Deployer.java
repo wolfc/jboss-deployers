@@ -92,6 +92,13 @@ public interface Deployer extends Ordered
    Set<String> getInputs();
    
    /**
+    * Get the required input for this deployer
+    *
+    * @return the inputs
+    */
+   Set<String> getRequiredInputs();
+
+   /**
     * Get the outputs for this deployer
     * 
     * @return the outputs
