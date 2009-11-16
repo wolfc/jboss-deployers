@@ -47,7 +47,6 @@ import org.jboss.deployers.spi.deployer.managed.ManagedDeploymentCreator;
 import org.jboss.deployers.structure.spi.DeploymentContext;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.deployers.structure.spi.StructuralDeployers;
-import org.jboss.deployers.structure.spi.helpers.RevertedDeploymentContextComparator;
 import org.jboss.deployers.structure.spi.main.MainDeployerStructure;
 import org.jboss.logging.Logger;
 import org.jboss.managed.api.ManagedDeployment;
@@ -103,7 +102,6 @@ public class MainDeployerImpl implements MainDeployer, MainDeployerStructure
 
    /** The top deployment context comparator */
    private Comparator<DeploymentContext> comparator;
-   private Comparator<DeploymentContext> reverted;
 
    /** The re-deployments */
    private final Map<String, Deployment> toRedeploy = Collections.synchronizedMap(new LinkedHashMap<String, Deployment>());
@@ -119,7 +117,6 @@ public class MainDeployerImpl implements MainDeployer, MainDeployerStructure
          throw new IllegalArgumentException("Null comparator");
 
       this.comparator = comparator;
-      this.reverted = new RevertedDeploymentContextComparator(comparator);
    }
 
    /**
@@ -669,9 +666,9 @@ public class MainDeployerImpl implements MainDeployer, MainDeployerStructure
             // Undeploy in reverse order (subdeployments first)
             undeployContexts = new ArrayList<DeploymentContext>(undeploy);
             undeploy.clear();
-            Collections.reverse(undeployContexts);
-            if (reverted != null)
-               Collections.sort(undeployContexts, reverted);
+            // order as it was deployed, Deployers::process will revert it 
+            if (comparator != null)
+               Collections.sort(undeployContexts, comparator);
          }
 
          if (undeployContexts != null)
