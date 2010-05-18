@@ -32,8 +32,11 @@ import java.util.HashMap;
 
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.deployer.helpers.AbstractParsingDeployerWithOutput;
+import org.jboss.deployers.spi.deployer.matchers.NameIgnoreMechanism;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.deployers.structure.spi.helpers.AbstractStructureBuilder;
 import org.jboss.deployers.vfs.spi.structure.VFSDeploymentUnit;
+import org.jboss.deployers.vfs.spi.structure.helpers.AbstractStructureDeployer;
 import org.jboss.virtual.VirtualFile;
 
 /**
@@ -175,7 +178,25 @@ public abstract class AbstractVFSParsingDeployer<T> extends AbstractParsingDeplo
       return altMappingsMap != null ? altMappingsMap.get(fileName) : null;
    }
 
-   @Override
+   /**
+    * Ignore file.
+    *
+    * @param unit the unit
+    * @param file the file
+    * @return true if we should ignore the file, false otherwise
+    */
+   protected boolean ignoreFile(VFSDeploymentUnit unit, VirtualFile file)
+   {
+      NameIgnoreMechanism mechanism = unit.getAttachment(NameIgnoreMechanism.class);
+      if (mechanism != null)
+      {
+         VirtualFile root = unit.getRoot();
+         String path = AbstractStructureDeployer.getRelativePath(root, file);
+         return mechanism.ignorePath(unit, path);
+      }
+      return false;
+   }
+
    protected T parse(DeploymentUnit unit, String name, T root) throws Exception
    {
       if (ignoreName(unit, name))
@@ -185,7 +206,7 @@ public abstract class AbstractVFSParsingDeployer<T> extends AbstractParsingDeplo
       VFSDeploymentUnit vfsDeploymentUnit = (VFSDeploymentUnit) unit;
 
       VirtualFile file = getMetadataFile(vfsDeploymentUnit, getOutput(), name, true);
-      return (file != null) ? parseAndInit(vfsDeploymentUnit, file, root) : null;
+      return (file != null && ignoreFile(vfsDeploymentUnit, file) == false) ? parseAndInit(vfsDeploymentUnit, file, root) : null;
    }
 
    protected T parse(DeploymentUnit unit, Set<String> names, T root) throws Exception
@@ -209,9 +230,16 @@ public abstract class AbstractVFSParsingDeployer<T> extends AbstractParsingDeplo
          {
             VirtualFile file = getMetadataFile(vfsDeploymentUnit, matchFileToClass(unit, name), name, true);
             if (file != null)
-               files.add(file);
+            {
+               if (ignoreFile(vfsDeploymentUnit, file))
+                  ignoredFiles.add(file.getName());
+               else
+                  files.add(file);
+            }
             else
+            {
                missingFiles.add(name);
+            }
          }
       }
 
@@ -276,7 +304,7 @@ public abstract class AbstractVFSParsingDeployer<T> extends AbstractParsingDeplo
     */
    protected T parseAndInit(VFSDeploymentUnit unit, VirtualFile file, T root, boolean checkIgnore) throws Exception
    {
-      if (checkIgnore && ignoreName(unit, file.getName()))
+      if (checkIgnore && ignoreFile(unit, file))
          return null;
 
       T result = parse(unit, file, root);
@@ -310,9 +338,21 @@ public abstract class AbstractVFSParsingDeployer<T> extends AbstractParsingDeplo
             {
                List<VirtualFile> matched = vfsDeploymentUnit.getMetaDataFiles(name, suffix);
                if (matched != null && matched.isEmpty() == false)
-                  files.addAll(matched);
+               {
+                  for (VirtualFile m : matched)
+                  {
+                     if (ignoreFile(vfsDeploymentUnit, m))
+                        ignoredFiles.add(m.getName());
+                     else
+                        files.add(m);
+                  }
+               }
                else
                   missingFiles.add(name);
+            }
+            else if (ignoreFile(vfsDeploymentUnit, file))
+            {
+               ignoredFiles.add(file.getName());
             }
             else
             {
@@ -359,7 +399,7 @@ public abstract class AbstractVFSParsingDeployer<T> extends AbstractParsingDeplo
 
       for (VirtualFile file : files)
       {
-         if (ignoreName(unit, file.getName()) == false)
+         if (ignoreFile(unit, file) == false)
          {
             T result = parse(unit, file, root);
             if (result != null)

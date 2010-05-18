@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.deployers.spi.deployer.matchers;
 
+package org.jboss.test.deployers.vfs.matchers.support;
+
+import org.jboss.deployers.spi.deployer.matchers.NameIgnoreMechanism;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 
 /**
- * Name ignore mechanism.
- * 
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface NameIgnoreMechanism
+public class SingleNIM implements NameIgnoreMechanism
 {
-   /**
-    * Do we ignore this file name.
-    *
-    * @param unit the deployment unit
-    * @param name the name to check
-    * @return true if we should ignore this name, false otherwise
-    */
-   boolean ignoreName(DeploymentUnit unit, String name);
+   private String ignore;
 
-   /**
-    * Do we ignore this relative path.
-    *
-    * @param unit the deployment unit
-    * @param path the relative path to check
-    * @return true if we should ignore this path, false otherwise
-    */
-   boolean ignorePath(DeploymentUnit unit, String path);
+   public SingleNIM(String ignore)
+   {
+      this.ignore = ignore;
+   }
+
+   public boolean ignoreName(DeploymentUnit unit, String name)
+   {
+      return name.equals(ignore);
+   }
+
+   public boolean ignorePath(DeploymentUnit unit, String path)
+   {
+      return path.equals("META-INF/" + ignore);
+   }
 }
