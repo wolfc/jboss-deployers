@@ -39,11 +39,7 @@ import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.deployer.DeploymentStage;
 import org.jboss.deployers.spi.attachments.MutableAttachments;
 import org.jboss.deployers.spi.attachments.helpers.AbstractMutableAttachments;
-import org.jboss.deployers.structure.spi.ClassLoaderFactory;
-import org.jboss.deployers.structure.spi.DeploymentContext;
-import org.jboss.deployers.structure.spi.DeploymentResourceLoader;
-import org.jboss.deployers.structure.spi.DeploymentUnit;
-import org.jboss.deployers.structure.spi.DeploymentUnitVisitor;
+import org.jboss.deployers.structure.spi.*;
 import org.jboss.metadata.spi.MetaData;
 import org.jboss.metadata.spi.MutableMetaData;
 import org.jboss.metadata.spi.scope.ScopeKey;
@@ -59,7 +55,7 @@ import org.jboss.metadata.spi.scope.ScopeKey;
  * @author <a href="ales.justin@jboss.com">Ales Justin</a>
  * @version $Revision: 1.1 $
  */
-public class AbstractDeploymentUnit extends AbstractMutableAttachments implements DeploymentUnit
+public class AbstractDeploymentUnit extends AbstractMutableAttachments implements DeploymentUnit, DeploymentUnitExt
 {
    /** The serialVersionUID */
    private static final long serialVersionUID = 1513962148798298768L;
@@ -87,6 +83,15 @@ public class AbstractDeploymentUnit extends AbstractMutableAttachments implement
       this.deploymentContext = deploymentContext;
    }
    
+   public void changeRelativeOrder(int relativeOrder)
+   {
+      if (deploymentContext instanceof DeploymentContextExt)
+      {
+         DeploymentContextExt ext = (DeploymentContextExt) deploymentContext;
+         ext.changeRelativeOrder(relativeOrder);
+      }
+   }
+
    public String getName()
    {
       return deploymentContext.getName();

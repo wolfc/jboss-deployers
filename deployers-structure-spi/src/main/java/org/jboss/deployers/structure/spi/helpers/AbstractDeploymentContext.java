@@ -52,12 +52,7 @@ import org.jboss.deployers.spi.attachments.MutableAttachments;
 import org.jboss.deployers.spi.attachments.helpers.ManagedObjectsWithTransientAttachmentsImpl;
 import org.jboss.deployers.spi.deployer.DeploymentStage;
 import org.jboss.deployers.spi.deployer.DeploymentStages;
-import org.jboss.deployers.structure.spi.ClassLoaderFactory;
-import org.jboss.deployers.structure.spi.DeploymentContext;
-import org.jboss.deployers.structure.spi.DeploymentContextVisitor;
-import org.jboss.deployers.structure.spi.DeploymentMBean;
-import org.jboss.deployers.structure.spi.DeploymentResourceLoader;
-import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.deployers.structure.spi.*;
 import org.jboss.deployers.structure.spi.scope.ScopeBuilder;
 import org.jboss.deployers.structure.spi.scope.helpers.DefaultScopeBuilder;
 import org.jboss.logging.Logger;
@@ -77,7 +72,7 @@ import org.jboss.metadata.spi.scope.ScopeKey;
  * @author <a href="ales.justin@jboss.com">Ales Justin</a>
  * @version $Revision: 1.1 $
  */
-public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttachmentsImpl implements DeploymentContext, AbstractDeploymentContextMBean, MBeanRegistration
+public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttachmentsImpl implements DeploymentContext, DeploymentContextExt, AbstractDeploymentContextMBean, MBeanRegistration
 {
    /** The serialVersionUID */
    private static final long serialVersionUID = 7368360479461613969L;
@@ -160,6 +155,9 @@ public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttach
    /** The required stage */
    private DeploymentStage requiredStage = DeploymentStages.INSTALLED;
    
+   /** The dirty flag types */
+   private Set<DirtyType> dirty = Collections.emptySet();
+
    /**
     * Get the scope builder for a deployment context
     * 
@@ -370,6 +368,25 @@ public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttach
       if (simpleName == null)
          this.simpleName = name;
       this.relativePath = relativePath;
+   }
+
+   public void changeRelativeOrder(int relativeOrder)
+   {
+      if (parent != null && parent instanceof DeploymentContextExt)
+      {
+         DeploymentContextExt ext = (DeploymentContextExt) parent;
+         ext.markDirty(DirtyType.SUB_DEPLOYMENT);
+      }
+      setRelativeOrder(relativeOrder);
+   }
+
+   @SuppressWarnings("unchecked")
+   public synchronized void markDirty(DirtyType type)
+   {
+      if (dirty instanceof CopyOnWriteArraySet == false)
+         dirty = new CopyOnWriteArraySet<DirtyType>();
+
+      dirty.add(type);
    }
 
    public String getName()
@@ -655,8 +672,19 @@ public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttach
    {
       if (children == null || children.isEmpty())
          return Collections.emptyList();
-      
-      return new ArrayList<DeploymentContext>(children);
+
+      synchronized (this)
+      {
+         List<DeploymentContext> contexts = new ArrayList<DeploymentContext>(children);
+         if (dirty.remove(DirtyType.SUB_DEPLOYMENT))
+         {
+            Collections.sort(contexts, comparator);
+            SortedSet<DeploymentContext> copy = new TreeSet<DeploymentContext>(comparator);
+            copy.addAll(contexts);
+            children = copy; // fixed/re-ordered copy
+         }
+         return contexts;
+      }
    }
 
    public List<ObjectName> getChildNames()
@@ -700,7 +728,23 @@ public class AbstractDeploymentContext extends ManagedObjectsWithTransientAttach
    
    public List<DeploymentContext> getComponents()
    {
-      return Collections.unmodifiableList(components);
+      if (components == null || components.isEmpty())
+         return Collections.emptyList();
+
+      synchronized (this)
+      {
+         if (dirty.remove(DirtyType.COMPONENT))
+         {
+            List<DeploymentContext> copy = new ArrayList<DeploymentContext>(components);
+            Collections.sort(copy, RelativeDeploymentContextComparator.getInstance());
+            components = copy;
+            return copy;
+         }
+         else
+         {
+            return Collections.unmodifiableList(components);
+         }
+      }
    }
 
    public List<ObjectName> getComponentNames()

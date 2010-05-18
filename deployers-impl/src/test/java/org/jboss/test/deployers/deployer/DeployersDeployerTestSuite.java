@@ -58,6 +58,7 @@ public class DeployersDeployerTestSuite extends TestSuite
       suite.addTest(DeployerContextClassLoaderUnitTestCase.suite());
       suite.addTest(DeployerRequiredStageUnitTestCase.suite());
       suite.addTest(DeployerRequiredInputsUnitTestCase.suite());
+      suite.addTest(DynamicRelativeOrderUnitTestCase.suite());
 
       // sorting tests
       suite.addTest(DeployerFlowUnitTestCase.suite());

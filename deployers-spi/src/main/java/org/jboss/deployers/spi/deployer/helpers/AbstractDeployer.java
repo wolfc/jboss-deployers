@@ -28,6 +28,7 @@ import org.jboss.deployers.spi.deployer.Deployer;
 import org.jboss.deployers.spi.deployer.DeploymentStage;
 import org.jboss.deployers.spi.deployer.DeploymentStages;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
+import org.jboss.deployers.structure.spi.DeploymentUnitExt;
 import org.jboss.logging.Logger;
 
 /**
@@ -451,5 +452,20 @@ public abstract class AbstractDeployer implements Deployer
    public void undeploy(DeploymentUnit unit)
    {
       // Nothing
+   }
+
+   /**
+    * Change relative order on unit.
+    *
+    * @param unit the deploymenty unit
+    * @param relativeOrder the relative order
+    */
+   protected static void changeRelativeOrder(DeploymentUnit unit, int relativeOrder)
+   {
+      if (unit instanceof DeploymentUnitExt)
+      {
+         DeploymentUnitExt ext = (DeploymentUnitExt) unit;
+         ext.changeRelativeOrder(relativeOrder);
+      }
    }
 }
