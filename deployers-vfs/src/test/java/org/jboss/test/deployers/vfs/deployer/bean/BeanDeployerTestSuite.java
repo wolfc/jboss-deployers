@@ -21,20 +21,11 @@
 */
 package org.jboss.test.deployers.vfs.deployer.bean;
 
+import org.jboss.test.deployers.vfs.deployer.bean.test.*;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.jboss.test.deployers.vfs.deployer.bean.test.AliasDeployerUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.AnnotatedBeansUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.BeanDeployerClassLoaderUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.BeanDeployerUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.BeanManagedDeploymentUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.BeanMetaDataFactoryDeployerUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.BeanScanningUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.BuilderBeansUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.KernelDeployerUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.KernelScopeUnitTestCase;
-import org.jboss.test.deployers.vfs.deployer.bean.test.AutowireAnnotationBeansTestCase;
 
 /**
  * BeanDeployerTestSuite.
@@ -65,6 +56,7 @@ public class BeanDeployerTestSuite extends TestSuite
       suite.addTest(AnnotatedBeansUnitTestCase.suite());
       suite.addTest(BuilderBeansUnitTestCase.suite());
       suite.addTest(AutowireAnnotationBeansTestCase.suite());
+      suite.addTest(BeansDeploymentRegistryUnitTestCase.suite());
 
       return suite;
    }

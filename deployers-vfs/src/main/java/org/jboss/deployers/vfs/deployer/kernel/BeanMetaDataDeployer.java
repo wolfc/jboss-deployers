@@ -29,6 +29,7 @@ import org.jboss.beans.metadata.spi.BeanMetaData;
 import org.jboss.beans.metadata.spi.ClassLoaderMetaData;
 import org.jboss.beans.metadata.spi.ValueMetaData;
 import org.jboss.dependency.spi.Controller;
+import org.jboss.dependency.spi.ControllerContext;
 import org.jboss.dependency.spi.ScopeInfo;
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.deployer.helpers.AbstractSimpleRealDeployer;
@@ -116,12 +117,16 @@ public class BeanMetaDataDeployer extends AbstractSimpleRealDeployer<BeanMetaDat
       ScopeInfo scopeInfo = context.getScopeInfo();
       scopeInfo.setScope(unit.getScope());
       scopeInfo.setMutableScope(unit.getMutableScope());
+
       try
       {
+         // move this before install, so FromDeployment can access it
+         putContext(context, unit.getParent()); // we're a component, use parent
          controller.install(context);
       }
       catch (Throwable t)
       {
+         removeContext(context, unit.getParent());
          throw DeploymentException.rethrowAsDeploymentException("Error deploying: " + deployment.getName(), t);
       }
    }
@@ -152,8 +157,9 @@ public class BeanMetaDataDeployer extends AbstractSimpleRealDeployer<BeanMetaDat
    @Override
    public void undeploy(DeploymentUnit unit, BeanMetaData deployment)
    {
-      controller.uninstall(deployment.getName());
-      
+      ControllerContext context = controller.uninstall(deployment.getName());
+      removeContext(context, unit.getParent());
+
       // Remove any classloader metadata we added (not necessary if we clone above)
       ClassLoaderMetaData classLoader = deployment.getClassLoader();
       if (classLoader instanceof DeploymentClassLoaderMetaData)
