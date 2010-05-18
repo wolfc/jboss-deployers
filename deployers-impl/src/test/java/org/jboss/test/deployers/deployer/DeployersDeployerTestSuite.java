@@ -26,19 +26,7 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
 import org.jboss.test.deployers.deployer.helpers.test.ExactAttachmentDeployerWithVisitorTestCase;
-import org.jboss.test.deployers.deployer.test.ComponentUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerClassLoaderUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerContextClassLoaderUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerFlowUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerOrderingUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerProtocolUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerRequiredInputsUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerRequiredStageUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployerWidthFirstUnitTestCase;
-import org.jboss.test.deployers.deployer.test.DeployersImplUnitTestCase;
-import org.jboss.test.deployers.deployer.test.HeuristicAllOrNothingUnitTestCase;
-import org.jboss.test.deployers.deployer.test.HeuristicRussionDollUnitTestCase;
-import org.jboss.test.deployers.deployer.test.MultipleComponentTypeUnitTestCase;
+import org.jboss.test.deployers.deployer.test.*;
 
 /**
  * Deployers Deployer Test Suite.
@@ -60,7 +48,6 @@ public class DeployersDeployerTestSuite extends TestSuite
 
       suite.addTest(DeployerProtocolUnitTestCase.suite());
       suite.addTest(DeployerOrderingUnitTestCase.suite());
-      suite.addTest(DeployerFlowUnitTestCase.suite());
       suite.addTest(DeployerWidthFirstUnitTestCase.suite());
       suite.addTest(DeployerClassLoaderUnitTestCase.suite());
       suite.addTest(DeployersImplUnitTestCase.suite());
@@ -71,6 +58,14 @@ public class DeployersDeployerTestSuite extends TestSuite
       suite.addTest(DeployerContextClassLoaderUnitTestCase.suite());
       suite.addTest(DeployerRequiredStageUnitTestCase.suite());
       suite.addTest(DeployerRequiredInputsUnitTestCase.suite());
+
+      // sorting tests
+      suite.addTest(DeployerFlowUnitTestCase.suite());
+      suite.addTest(DominoOrderingUnitTestCase.suite());
+      suite.addTest(KahnOrderingUnitTestCase.suite());
+      suite.addTest(InOutTopologicalOrderingUnitTestCase.suite());
+      suite.addTest(IndexingOrderingUnitTestCase.suite());
+      suite.addTest(DependenciesTopologicalOrderingUnitTestCase.suite());
 
       // helper deployers
       suite.addTest(ExactAttachmentDeployerWithVisitorTestCase.suite());

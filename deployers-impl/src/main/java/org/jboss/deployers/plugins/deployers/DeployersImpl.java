@@ -51,6 +51,8 @@ import org.jboss.deployers.client.spi.IncompleteDeployments;
 import org.jboss.deployers.client.spi.MissingDependency;
 import org.jboss.deployers.plugins.sort.DeployerSorter;
 import org.jboss.deployers.plugins.sort.DeployerSorterFactory;
+import org.jboss.deployers.plugins.sort.NewStagedSortedDeployers;
+import org.jboss.deployers.plugins.sort.StagedSortedDeployers;
 import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.DeploymentState;
 import org.jboss.deployers.spi.deployer.Deployer;
@@ -122,7 +124,7 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
    /**
     * The deployers by stage and type
     */
-   private Map<String, List<Deployer>> deployersByStage = new HashMap<String, List<Deployer>>();
+   private StagedSortedDeployers deployersByStage = new NewStagedSortedDeployers();
 
    /**
     * The scope builder
@@ -265,24 +267,22 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
          return;
 
       String stageName = stage.getName();
-      List<Deployer> deployers = deployersByStage.get(stageName);
-      if (deployers == null)
-         deployers = Collections.emptyList();
-      deployers = insert(deployers, wrapper);
-      deployersByStage.put(stageName, deployers);
-
+      deployersByStage.addDeployer(stageName, wrapper);
       this.deployers.add(wrapper);
 
-      StringBuilder builder = new StringBuilder();
-      builder.append("Added deployer ").append(deployer).append(" for stage ").append(stageName).append('\n');
-      for (Deployer temp : getDeployersList(stageName))
+      if (log.isTraceEnabled())
       {
-         builder.append(temp);
-         builder.append("{inputs=").append(temp.getInputs());
-         builder.append(" outputs=").append(temp.getOutputs());
-         builder.append("}\n");
+         StringBuilder builder = new StringBuilder();
+         builder.append("Added deployer ").append(deployer).append(" for stage ").append(stageName).append('\n');
+         for (Deployer temp : getDeployersList(stageName))
+         {
+            builder.append(temp);
+            builder.append("{inputs=").append(temp.getInputs());
+            builder.append(" outputs=").append(temp.getOutputs());
+            builder.append("}\n");
+         }
+         log.trace(builder);
       }
-      log.debug(builder);
    }
 
    /**
@@ -294,7 +294,9 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
    {
       if (deployer == null)
          throw new IllegalArgumentException("Null deployer");
-      deployers.remove(new DeployerWrapper(deployer));
+
+      DeployerWrapper wrapper = new DeployerWrapper(deployer);
+      deployers.remove(wrapper);
 
       DeploymentStage stage = deployer.getStage();
       if (stage == null)
@@ -304,15 +306,9 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
       }
 
       String stageName = stage.getName();
-      List<Deployer> deployers = deployersByStage.get(stageName);
-      if (deployers == null)
-         return;
-
-      deployers.remove(deployer);
-      if (deployers.isEmpty())
-         deployersByStage.remove(stageName);
-
-      log.debug("Removed deployer " + deployer + " from stage " + stageName);
+      deployersByStage.removeDeployer(stageName, wrapper);
+      if (log.isTraceEnabled())
+         log.trace("Removed deployer " + deployer + " from stage " + stageName);
    }
 
    /**
@@ -429,6 +425,16 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
    public void setRegisterMBeans(boolean registerMBeans)
    {
       this.registerMBeans = registerMBeans;
+   }
+
+   /**
+    * Set staged sorted deployers.
+    *
+    * @param deployersByStage the stage sorted deployers
+    */
+   public void setDeployersByStage(StagedSortedDeployers deployersByStage)
+   {
+      this.deployersByStage = deployersByStage;
    }
 
    public void start()
@@ -1486,7 +1492,7 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
     */
    protected synchronized List<Deployer> getDeployersList(String stageName)
    {
-      List<Deployer> deployers = deployersByStage.get(stageName);
+      List<Deployer> deployers = deployersByStage.getDeployerList(stageName);
       if (deployers == null || deployers.isEmpty())
          return Collections.emptyList();
 
