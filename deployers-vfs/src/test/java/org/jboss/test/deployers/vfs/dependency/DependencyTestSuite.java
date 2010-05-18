@@ -21,10 +21,12 @@
  */
 package org.jboss.test.deployers.vfs.dependency;
 
+import org.jboss.test.deployers.vfs.dependency.test.DependenciesTestCase;
+import org.jboss.test.deployers.vfs.dependency.test.FromDeploymentTestCase;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.jboss.test.deployers.vfs.dependency.test.DependenciesTestCase;
 
 /**
  * DependencyTestSuite.
@@ -43,6 +45,7 @@ public class DependencyTestSuite extends TestSuite
       TestSuite suite = new TestSuite("VFS Dependency Scanning Tests");
 
       suite.addTest(DependenciesTestCase.suite());
+      suite.addTest(FromDeploymentTestCase.suite());
 
       return suite;
    }
