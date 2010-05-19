@@ -31,12 +31,7 @@ import org.jboss.classloader.plugins.system.DefaultClassLoaderSystem;
 import org.jboss.classloader.spi.ClassLoaderSystem;
 import org.jboss.classloader.spi.ParentPolicy;
 import org.jboss.classloading.spi.dependency.ClassLoading;
-import org.jboss.classloading.spi.metadata.CapabilitiesMetaData;
-import org.jboss.classloading.spi.metadata.Capability;
-import org.jboss.classloading.spi.metadata.ClassLoadingMetaData;
-import org.jboss.classloading.spi.metadata.ClassLoadingMetaDataFactory;
-import org.jboss.classloading.spi.metadata.Requirement;
-import org.jboss.classloading.spi.metadata.RequirementsMetaData;
+import org.jboss.classloading.spi.metadata.*;
 import org.jboss.classloading.spi.version.Version;
 import org.jboss.classloading.spi.version.VersionRange;
 import org.jboss.deployers.client.plugins.deployment.AbstractDeployment;
@@ -147,7 +142,7 @@ public abstract class VFSClassLoaderDependenciesTest extends BaseDeployersVFSTes
       }
       catch (Exception e)
       {
-         checkThrowable(IllegalStateException.class, e);
+         checkThrowable(ClassNotFoundException.class, e);
       }
    }
 
