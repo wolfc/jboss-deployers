@@ -24,10 +24,11 @@ package org.jboss.test.deployers.main;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.jboss.test.deployers.main.test.DeployerCheckCompleteTestCase;
-import org.jboss.test.deployers.main.test.DeployerSingleDeploymentTestCase;
-import org.jboss.test.deployers.main.test.DeployerIncompleteDeploymentsTestCase;
 import org.jboss.test.deployers.main.test.CycleCheckCompleteTestCase;
+import org.jboss.test.deployers.main.test.DeployerCheckCompleteTestCase;
+import org.jboss.test.deployers.main.test.DeployerIncompleteDeploymentsTestCase;
+import org.jboss.test.deployers.main.test.DeployerSingleDeploymentTestCase;
+import org.jboss.test.deployers.main.test.DynamicDeployerUsageTestCase;
 
 /**
  * Deployers Main Test Suite.
@@ -49,6 +50,7 @@ public class DeployersMainTestSuite extends TestSuite
       suite.addTest(DeployerCheckCompleteTestCase.suite());
       suite.addTest(DeployerIncompleteDeploymentsTestCase.suite());
       suite.addTest(CycleCheckCompleteTestCase.suite());
+      suite.addTest(DynamicDeployerUsageTestCase.suite());
 
       return suite;
    }
