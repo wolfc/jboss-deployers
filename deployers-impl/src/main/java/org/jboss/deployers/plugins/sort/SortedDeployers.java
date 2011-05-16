@@ -1,3 +1,24 @@
+/*
+* JBoss, Home of Professional Open Source
+* Copyright 2006, JBoss Inc., and individual contributors as indicated
+* by the @authors tag. See the copyright.txt in the distribution for a
+* full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
 package org.jboss.deployers.plugins.sort;
 
 import java.util.ArrayList;
@@ -12,13 +33,13 @@ import org.jboss.deployers.spi.deployer.Deployer;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @author <a href="ales.justin@jboss.org">Ales Justin</a>
  * @version $Revision: 1 $
  */
 public class SortedDeployers
 {
    private static class Entry
    {
-
       public Deployer deployer;
       public int index;
 
@@ -66,8 +87,8 @@ public class SortedDeployers
 
    Map<String, List<Entry>> outputMap = new HashMap<String, List<Entry>>();
    Map<String, List<Entry>> inputMap = new HashMap<String, List<Entry>>();
-   ArrayList<Entry> entries = new ArrayList<Entry>();
-   ArrayList<Deployer> deployers = new ArrayList<Deployer>();
+   List<Entry> entries = new ArrayList<Entry>();
+   volatile List<Deployer> deployers = new ArrayList<Deployer>();
 
    public void addOutputs(Entry deployer)
    {
@@ -108,11 +129,12 @@ public class SortedDeployers
       if (entries.size() == 0)
       {
          insertAt(n);
-         deployers.clear();
+         List<Deployer> copy = new ArrayList<Deployer>();
          for (Entry entry : entries)
          {
-            deployers.add(entry.deployer);
+            copy.add(entry.deployer);
          }
+         deployers = copy;
          return;
       }
 
@@ -123,11 +145,12 @@ public class SortedDeployers
 
       // For some reason, something depends on a new list within MC/VDF
       // be careful if you change this
-      deployers = new ArrayList<Deployer>();
+      List<Deployer> copy = new ArrayList<Deployer>();
       for (Entry entry : entries)
       {
-         deployers.add(entry.deployer);
+         copy.add(entry.deployer);
       }
+      deployers = copy;
    }
 
    public void removeDeployer(Deployer d)
@@ -136,14 +159,15 @@ public class SortedDeployers
       int esize = entries.size();
       for (int i = 0; i < esize; i++)
       {
-         if (entries.get(0).deployer.equals(d))
+         Entry entry = entries.get(i);
+         if (entry.deployer.equals(d))
          {
-            removed = entries.get(0);
+            removed = entry;
             removeAt(i);
             break;
          }
       }
-      if (d.getInputs() != null)
+      if (removed != null && d.getInputs() != null)
       {
          for (String input : d.getInputs())
          {
@@ -154,7 +178,7 @@ public class SortedDeployers
             }
          }
       }
-      if (d.getOutputs() != null)
+      if (removed != null && d.getOutputs() != null)
       {
          for (String output : d.getOutputs())
          {
@@ -165,16 +189,17 @@ public class SortedDeployers
             }
          }
       }
-      deployers = new ArrayList<Deployer>();
+      List<Deployer> copy = new ArrayList<Deployer>();
       for (Entry entry : entries)
       {
-         deployers.add(entry.deployer);
+         copy.add(entry.deployer);
       }
+      deployers = copy;
    }
 
    public List<Deployer> getDeployers()
    {
-      return deployers;
+      return Collections.unmodifiableList(deployers);
    }
 
    private void traverseOutputs(Entry n, IdentityHashMap<Entry, Entry> visited)
