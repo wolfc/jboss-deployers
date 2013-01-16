@@ -107,6 +107,11 @@
 	 </dependency>
     <!-- Test dependencies -->
     <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.deployers</groupId>
       <artifactId>jboss-deployers-client</artifactId>
       <type>test-jar</type>
