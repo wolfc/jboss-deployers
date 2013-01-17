@@ -27,11 +27,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.MBeanRegistration;
@@ -49,6 +57,7 @@ import org.jboss.deployers.client.spi.Deployment;
 import org.jboss.deployers.client.spi.IncompleteDeploymentException;
 import org.jboss.deployers.client.spi.IncompleteDeployments;
 import org.jboss.deployers.client.spi.MissingDependency;
+import org.jboss.deployers.plugins.internal.Block;
 import org.jboss.deployers.plugins.sort.DeployerSorter;
 import org.jboss.deployers.plugins.sort.DeployerSorterFactory;
 import org.jboss.deployers.plugins.sort.NewStagedSortedDeployers;
@@ -133,6 +142,8 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
 
    /** The ManagedDeploymentCreator plugin */
    private ManagedObjectCreator mgtObjectCreator = null;
+
+   private ExecutorService executor = new ThreadPoolExecutor(4, 4, 30, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
 
    /**
     * Create a new DeployersImpl.
@@ -661,7 +672,7 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
 
    public void process(List<DeploymentContext> deploy, List<DeploymentContext> undeploy)
    {
-      boolean trace = log.isTraceEnabled();
+      final boolean trace = log.isTraceEnabled();
 
       // There is something to undeploy
       if (undeploy != null && undeploy.isEmpty() == false)
@@ -774,32 +785,36 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
          }
 
          // Go through the states in order
-         ControllerStateModel states = controller.getStates();
-         for (ControllerState state : states)
+         final ControllerStateModel states = controller.getStates();
+         for (final ControllerState state : states)
          {
-            for (DeploymentContext context : deploy)
+            Block<DeploymentContext> op = new Block<DeploymentContext>()
             {
-               DeploymentControllerContext deploymentControllerContext = context.getTransientAttachments().getAttachment(ControllerContext.class.getName(), DeploymentControllerContext.class);
-               ControllerState current = deploymentControllerContext.getState();
-               if (ControllerState.ERROR.equals(current) == false && states.isBeforeState(current, state) && current.getStateString().equals(context.getRequiredStage().getName()) == false)
+               public void apply(DeploymentContext context)
                {
-                  checkShutdown();
-                  try
+                  DeploymentControllerContext deploymentControllerContext = context.getTransientAttachments().getAttachment(ControllerContext.class.getName(), DeploymentControllerContext.class);
+                  ControllerState current = deploymentControllerContext.getState();
+                  if (ControllerState.ERROR.equals(current) == false && states.isBeforeState(current, state) && current.getStateString().equals(context.getRequiredStage().getName()) == false)
                   {
-                     controller.change(deploymentControllerContext, state);
+                     checkShutdown();
+                     try
+                     {
+                        controller.change(deploymentControllerContext, state);
+                     }
+                     catch (Throwable t)
+                     {
+                        context.setState(DeploymentState.ERROR);
+                        context.setProblem(t);
+                     }
                   }
-                  catch (Throwable t)
+                  else
                   {
-                     context.setState(DeploymentState.ERROR);
-                     context.setProblem(t);
+                     if (trace)
+                        log.trace("Not moving " + deploymentControllerContext + " to state " + state + " it is at " + current);
                   }
                }
-               else
-               {
-                  if (trace)
-                     log.trace("Not moving " + deploymentControllerContext + " to state " + state + " it is at " + current);
-               }
-            }
+            };
+            parallel(executor, deploy, op);
          }
       }
    }
@@ -1672,5 +1687,41 @@ public class DeployersImpl implements Deployers, ControllerContextActions,
 
    public void postDeregister()
    {
+   }
+
+   private static <T> void parallel(final ExecutorService executor, final Iterable<T> c, final Block<? super T> op) {
+      final List<Future<Void>> tasks = new LinkedList<Future<Void>>();
+      for (final T item : c)
+      {
+         tasks.add(executor.submit(new Callable<Void>()
+         {
+            public Void call() throws Exception
+            {
+               op.apply(item);
+               return null;
+            }
+         }));
+      }
+      for (final Future<?> task : tasks)
+      {
+         try
+         {
+            task.get();
+         }
+         catch (InterruptedException e)
+         {
+            throw new RuntimeException(e);
+         }
+         catch (ExecutionException e)
+         {
+            final Throwable cause = e.getCause();
+            if (cause instanceof Error)
+               throw (Error) cause;
+            else if (cause instanceof RuntimeException)
+               throw (RuntimeException) cause;
+            else
+               throw new RuntimeException(cause);
+         }
+      }
    }
 }
